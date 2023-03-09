@@ -54,8 +54,12 @@ def delete_container(container_id):
     session.delete(container)
     session.commit()
 
-def read_sensors(plant_id, moisture_level, light, temperature, substrate, recommended_watering_frequency, recommended_light_exposure, recommended_substrate_amendment):
-    sensor = Sensor(
+def read_sensors(
+        plant_id, moisture_level, light, temperature,
+        substrate, recommended_watering_frequency,
+        recommended_light_exposure, recommended_substrate_amendment
+        ):
+        sensor = Sensor(
         plant_id, 
         moisture_level, 
         light, 
@@ -66,21 +70,22 @@ def read_sensors(plant_id, moisture_level, light, temperature, substrate, recomm
         recommended_substrate_amendment=recommended_substrate_amendment
         )
 
-def generate_readings(self):
-        if self.sensor_type == "moisture":
-            return random.uniform(0.0, 100.0)
-        elif self.sensor_type == "light":
-            return random.uniform(0.0, 2000.0)
-        elif self.sensor_type == "substrate":
-            return random.choice(["add compost", "add vermiculite", "add perlite"])
-        else:
-            raise ValueError(f"Invalid sensor type: {self.sensor_type}")
+def generate_readings(sensor_type):
+    if sensor_type == "moisture":
+        return random.uniform(0.0, 100.0)
+    elif sensor_type == "light":
+        return random.uniform(0.0, 2000.0)
+    elif sensor_type == "substrate":
+        return random.choice(["add compost", "add vermiculite", "add perlite"])
+    else:
+        raise ValueError(f"Invalid sensor type: {sensor_type}")
+
 
 def generate_sensor_readings(session):
     sensors = session.query(Sensor).all()
     for sensor in sensors:
         if sensor.sensor_type in ["moisture", "light", "substrate"]:
-            reading = sensor.generate_readings()
+            reading = generate_readings(sensor.sensor_type)
             if sensor.sensor_type == "moisture":
                 sensor.moisture = reading
             elif sensor.sensor_type == "light":
@@ -89,3 +94,4 @@ def generate_sensor_readings(session):
                 sensor.substrate_recommendation = reading
             session.add(sensor)
     session.commit()
+

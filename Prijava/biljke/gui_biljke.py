@@ -7,11 +7,11 @@ from biljke.crud_bilja import CreateNewPlantScreen
 class PlantsScreen(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-
+        
         self.label = tk.LabelFrame(self, text="Plants Screen")
         self.label.grid(padx=10, pady=10)
 
-        self.canvas = tk.Canvas(self.label, highlightthickness=0)
+        self.canvas = tk.Canvas(self.label, highlightthickness=0, width=500, height=500)
         self.canvas.grid(sticky='nsew')
 
         scrollbar = tk.Scrollbar(self.label, orient=tk.VERTICAL, command=self.canvas.yview)
@@ -72,7 +72,7 @@ class PlantsScreen(ttk.Frame):
 
     def show_new_plant_screen(self):
         new_plant_screen = CreateNewPlantScreen()
-        new_plant = new_plant_screen.add_new_plant()
+        new_plant = new_plant_screen.add_buttons()
 
         if new_plant:
             for i, labelframe in enumerate(self.plant_labelframes):
@@ -107,5 +107,17 @@ class PlantsScreen(ttk.Frame):
         # Update the layout
         self.canvas.update_idletasks()
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
+
+    def show_new_plant_screen(self):
+        new_plant_screen = CreateNewPlantScreen()
+        new_plant = new_plant_screen.add_buttons()
+
+        if new_plant:
+            plant_name, plant_image = new_plant
+            self.plant_names.append(plant_name)
+            self.plant_images.append(plant_image)
+            self.create_plant_labelframes()
+            self.canvas.update_idletasks()
+            self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
 

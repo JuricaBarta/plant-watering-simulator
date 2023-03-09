@@ -127,7 +127,7 @@ for plant_name in plant_names:
               'pillea_elefantore.jpg', 'spatifilum.jpg']"""
 
 # kreiranje 10 posuda samo ako ih nema u bazi
-locations = ['Kitchen']
+locations = ['Kitchen', 'Balcony', 'Living room']
 for i, plant_name in enumerate(plant_names):
     container = session.query(Container).filter_by(location=locations[i % len(locations)]).first()
     if container is None:
@@ -135,25 +135,26 @@ for i, plant_name in enumerate(plant_names):
         session.add(container)
         session.commit()
 
-        
-"""# Kreiranje biljke i spremnika za biljku
-plant1 = Plant(plant_name="Acer")
-container1 = Container(location="Kitchen", plant_name="Acer")
 
-# Kreiranje senzora za prvi spremnik
-sensor1 = Sensor(sensor_type="Temperature", sensor_location="Inside", container=container1)
-sensor2 = Sensor(sensor_type="Humidity", sensor_location="Inside", container=container1)
+# create a sensor for each container and plant
+for container in session.query(Container).all():
+    plant = container.plant
+    sensor_type = random.choice(['moisture', 'light'])
+    sensor_location = container.location
+    moisture = random.uniform(0, 1)
+    light = random.uniform(0, 1)
+    substrate_recommendation = f"Use a well-draining substrate for {plant.plant_name}"
 
-# Generiranje nasumičnih očitanja senzora
-for i in range(10):
-    temperature_reading = round(random.uniform(20.0, 30.0), 2)
-    humidity_reading = round(random.uniform(40.0, 60.0), 2)
+    sensor = Sensor(sensor_type=sensor_type,
+                    sensor_location=sensor_location,
+                    container=container,
+                    moisture=moisture,
+                    light=light,
+                    substrate_recommendation=substrate_recommendation)
 
-    # Pohrana očitanja u bazu podataka
-    temperature = SensorReading(value=temperature_reading, sensor=sensor1)
-    humidity = SensorReading(value=humidity_reading, sensor=sensor2)
-    session.add(temperature)
-    session.add(humidity)"""
+    session.add(sensor)
+    session.commit()
 
-session.commit()
+print("Sensors are successfully added to the database.")
+
 

@@ -42,7 +42,8 @@ class CreateNewPlantScreen(tk.Toplevel):
 
         button_update = ttk.Button(
             self.options_frame, 
-            text="Ažuriraj postojeću biljku"
+            text="Ažuriraj postojeću biljku",
+            command=self.update_existing_plant
             )
         button_update.pack(pady=10)
 
@@ -116,3 +117,52 @@ class CreateNewPlantScreen(tk.Toplevel):
         self.listbox.delete(tk.ACTIVE)
 
         print(f"Biljka {selected_plant} je uspješno izbrisana iz baze podataka.")
+
+    def update_existing_plant(self):
+    # get the selected plant from the Listbox
+        self.listbox = self.list_plants_frame.winfo_children()[0]
+        selection = self.listbox.get(self.listbox.curselection()[0])
+        if not selection:
+            return
+
+        selected_plant_str = self.listbox.get(selection[0])
+        selected_plant_id = selected_plant_str.split("-")[0].strip()
+
+        # retrieve the selected plant from the database
+        selected_plant = session.query(Plant).filter_by(plant_id=selected_plant_id).first()
+
+        # clear the options_frame and create entry and button widgets
+        for child in self.options_frame.winfo_children():
+            child.destroy()
+
+        name_label = ttk.Label(self.options_frame, text="Ime biljke:")
+        name_label.pack(pady=10)
+
+        name_entry = ttk.Entry(self.options_frame)
+        name_entry.insert(0, selected_plant.plant_name)
+        name_entry.pack(pady=5)
+
+        image_label = ttk.Label(self.options_frame, text="Naziv slike (opcionalno):")
+        image_label.pack(pady=10)
+
+        image_entry = ttk.Entry(self.options_frame)
+        image_entry.insert(0, selected_plant.image_name or "")
+        image_entry.pack(pady=5)
+
+        save_button = ttk.Button(
+            self.options_frame, 
+            text="Spremi biljku", 
+            command=lambda: self.update_plant(selected_plant_id, name_entry.get(), 
+            image_entry.get() or None)
+            )
+        save_button.pack(pady=10)
+
+    def update_plant(self, plant_id, name, image_name):
+        # update the selected plant in the database
+        session.query(Plant).filter_by(plant_id=plant_id).update({
+            "plant_name": name,
+            "image_name": image_name
+        })
+        session.commit()
+
+        # update the Listbox with the updated plant
