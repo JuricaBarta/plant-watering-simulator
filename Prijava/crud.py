@@ -1,9 +1,7 @@
 from PIL import Image, ImageTk
 import tkinter as tk
-from database import session, Plant, Container, Sensor
+from database import session, Plant, Container#, Sensor
 import random
-from datetime import datetime
-from sqlalchemy.orm import Session
 #from biljke.kreiranje_nove_biljke import *
 
 class PlantImage:
@@ -53,45 +51,44 @@ def delete_container(container_id):
     container = session.query(Container).filter_by(id=container_id).one()
     session.delete(container)
     session.commit()
+    
 
-def read_sensors(
-        plant_id, moisture_level, light, temperature,
-        substrate, recommended_watering_frequency,
-        recommended_light_exposure, recommended_substrate_amendment
-        ):
-        sensor = Sensor(
-        plant_id, 
-        moisture_level, 
-        light, 
-        temperature, 
-        substrate, 
-        recommended_watering_frequency=recommended_watering_frequency, 
-        recommended_light_exposure=recommended_light_exposure, 
-        recommended_substrate_amendment=recommended_substrate_amendment
-        )
+def generate_sensor_data(plant_name, container_location):
+    
+    # Get the container associated with the specified plant
+    container = session.query(Container).join(Container.plant).filter(Plant.plant_name == plant_name, Container.location == container_location).first()
 
-def generate_readings(sensor_type):
-    if sensor_type == "moisture":
-        return random.uniform(0.0, 100.0)
-    elif sensor_type == "light":
-        return random.uniform(0.0, 2000.0)
-    elif sensor_type == "substrate":
-        return random.choice(["add compost", "add vermiculite", "add perlite"])
+    sensor_info = ''
+    if container:
+        for sensor in container.sensors:
+            if sensor.sensor_type == 'substrate':
+                if random.random() < 0.5:
+                    sensor.substrate_recommendation = "Add fertilizer"
+                else:
+                    sensor.substrate_recommendation = "None"
+            elif sensor.sensor_type == 'moisture':
+                sensor.moisture = random.uniform(0, 100)
+                if sensor.moisture < 50:
+                    sensor_info += "Plant needs more water\n"
+                elif sensor.moisture > 75:
+                    sensor_info += "Plant has too much water\n"
+                else:
+                    sensor_info += f"Plant has {sensor.moisture}% of water\n"
+            elif sensor.sensor_type == 'light':
+                sensor.light = random.uniform(0, 2000)
+                if sensor.light < 1000:
+                    sensor_info += "Plant needs more light\n"
+                elif sensor.light > 2000:
+                    sensor_info += "Plant has too much light\n"
+                else:
+                    sensor_info += f"Plant has {sensor.light} lumens per watt of light\n"
+
+        session.commit()
+        session.close()
+
+        return sensor_info
     else:
-        raise ValueError(f"Invalid sensor type: {sensor_type}")
+        session.close()
+        return f"No container found for plant {plant_name} at location {container_location}"
 
-
-def generate_sensor_readings(session):
-    sensors = session.query(Sensor).all()
-    for sensor in sensors:
-        if sensor.sensor_type in ["moisture", "light", "substrate"]:
-            reading = generate_readings(sensor.sensor_type)
-            if sensor.sensor_type == "moisture":
-                sensor.moisture = reading
-            elif sensor.sensor_type == "light":
-                sensor.light = reading
-            elif sensor.sensor_type == "substrate":
-                sensor.substrate_recommendation = reading
-            session.add(sensor)
-    session.commit()
 

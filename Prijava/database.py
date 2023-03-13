@@ -2,6 +2,13 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import random
+#from crud import generate_sensor_data
+
+from sqlalchemy.orm import sessionmaker, scoped_session
+
+engine = create_engine('sqlite:///database.db', echo=True)
+Session = sessionmaker(bind=engine)
+session_factory = scoped_session(Session)
 
 # Klasa Korisnika
 Base = declarative_base()
@@ -135,26 +142,28 @@ for i, plant_name in enumerate(plant_names):
         session.add(container)
         session.commit()
 
+        # create sensors for the newly created container
+        for sensor_type in ['moisture', 'light', 'substrate']:
+            sensor_location = container.location
+            substrate_recommendation = f"Use a well-draining substrate for {container.plant.plant_name}"
+            moisture = random.uniform(0, 100) if sensor_type == 'moisture' else None
+            light = random.uniform(0, 2000) if sensor_type == 'light' else None
 
-# create a sensor for each container and plant
-for container in session.query(Container).all():
-    plant = container.plant
-    sensor_type = random.choice(['moisture', 'light'])
-    sensor_location = container.location
-    moisture = random.uniform(0, 1)
-    light = random.uniform(0, 1)
-    substrate_recommendation = f"Use a well-draining substrate for {plant.plant_name}"
+            if sensor_type == 'substrate':
+                if random.random() < 0.5:
+                    substrate_recommendation = "Add fertilizer"
+                else:
+                    substrate_recommendation = "None"
 
-    sensor = Sensor(sensor_type=sensor_type,
-                    sensor_location=sensor_location,
-                    container=container,
-                    moisture=moisture,
-                    light=light,
-                    substrate_recommendation=substrate_recommendation)
+            sensor = Sensor(sensor_type=sensor_type,
+                            sensor_location=sensor_location,
+                            container=container,
+                            moisture=moisture,
+                            light=light,
+                            substrate_recommendation=substrate_recommendation)
 
-    session.add(sensor)
-    session.commit()
+            session.add(sensor)
+            session.commit()
 
-print("Sensors are successfully added to the database.")
 
 
