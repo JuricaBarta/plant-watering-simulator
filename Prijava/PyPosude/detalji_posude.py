@@ -1,38 +1,63 @@
 import tkinter as tk
 from tkinter import ttk
 import matplotlib as mb
-from PyPosude.crud_posude import CreateNewContainerScreen
+#from PyPosude.crud_posude import CreateNewContainerScreen
+from PyPosude.gui_posude import *
+import matplotlib.pyplot as plt
+#from crud import generate_sensor_data
+from database import Container
 
-class ContainerDetails(tk.Frame):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+class ContainerDetails(ttk.Frame):
+    def __init__(self, parent, session, container_id):
+        super().__init__(parent)
+        self.session = session
+        self.container_id = container_id
 
-        label = tk.LabelFrame(self, text="Naziv PyPosude")
-        label.grid(row=0, column=0, pady=10, padx=10)
+        self.container_id_label = tk.Label(self, text="Container ID:")
+        self.container_id_label.grid(row=0, column=0, padx=10, pady=10, sticky='w')
 
-        sensor_one = tk.Label(label, text="Senzor1")
-        sensor_one.grid(row=0, column=0, pady=10, padx=10)
-        sensor_two = tk.Label(label, text="Senzor2")
-        sensor_two.grid(row=1, column=0, pady=10, padx=10)
-        sensor_three = tk.Label(label, text="Senzor3")
-        sensor_three.grid(row=2, column=0, pady=10, padx=10)
-        sensor_four = tk.Label(label, text="Senzor4")
-        sensor_four.grid(row=3, column=0, pady=10, padx=10)
-        
+        self.container_id_value_label = tk.Label(self, text="")
+        self.container_id_value_label.grid(row=0, column=1, padx=10, pady=10, sticky='w')
 
+        self.sensor_info_label = tk.Label(self, text="")
+        self.sensor_info_label.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
 
-        button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
-        button_submit.grid(row=0,column=1)
+    """def show_container_details(self, container_id):
+        container = self.session.query(Container).filter_by(container_id=container_id).first()
+        sensors = container.sensors
 
-    def submit_plant(self):
-        # Ovde bi se implementirao kod za spremanje nove biljke u bazu podataka
-        print("Nova biljka je spremljena.")
+        # Get sensor readings for each sensor in the container
+        sensor_data = {}
+        for i, sensor in enumerate(sensors):
+            sensor_data[sensor] = generate_sensor_data(container_id.plant_id.sensor_location)
 
-    def open_creator_window(self):
-        button = tk.Button(self, text="Go to Tab 1",
-                        command=self.open_new_plant_screen)
-        button.grid(row=1,column=1)
+        # Plot the sensor data
+        plt.figure(figsize=(10, 6))
+        plt.title("Sensor Readings for Container {}".format(container_id))
+        for i, (sensor, data) in enumerate(sensor_data.items()):
+            plt.plot(data, label="Sensor {}".format(i+1))
 
-    def open_new_plant_screen(self):
-        create_new_plant_screen = CreateNewContainerScreen()
-        create_new_plant_screen.grid(row=2,column=1)
+        plt.xlabel("Time")
+        plt.ylabel("Sensor Reading")
+        plt.legend()
+        plt.show()
+
+        # Update the container ID label
+        self.container_id_value_label.configure(text=str(container_id))
+
+        # Initialize the sensor information string
+        sensor_info = ""
+
+        # Loop over all sensors in the container and add their information to the sensor information string
+        for sensor in Container.sensors:
+            sensor_info += f"Location: {sensor.sensor_location}\n"
+            if sensor.moisture is not None:
+                sensor_info += f"Moisture reading: {sensor.moisture:.2f}\n"
+            if sensor.light is not None:
+                sensor_info += f"Light reading: {sensor.light}\n"
+            sensor_info += f"Substrate recommendation: {sensor.substrate_recommendation}\n\n"
+
+        # Update the sensor information label
+         
+        self.sensor_info_label.configure(text="\n".join(sensor_data.values()))"""
+

@@ -1,23 +1,25 @@
 from PIL import Image, ImageTk
 import tkinter as tk
-from database import session, Plant, Container#, Sensor
+from database import session, Plant, Container, Sensor
 import random
+from datetime import datetime
+from sqlalchemy.orm import Session
+from typing import List
 #from biljke.kreiranje_nove_biljke import *
 
-class PlantImage:
-    def __init__(self, filename, size=(150, 200)):
-        self.filename = filename
-        self.size = size
-        self.photo = self.open_and_resize() 
+def create_image(self, filename, size=(150, 200)):
+    self.filename = filename
+    self.size = size
+    self.photo = self.open_and_resize() 
     
-    def open_and_resize(self):
-        picture = Image.open(self.filename)
-        resized = picture.resize(self.size, Image.LANCZOS)
-        return ImageTk.PhotoImage(resized)
+def open_and_resize(self):
+    picture = Image.open(self.filename)
+    resized = picture.resize(self.size, Image.LANCZOS)
+    return ImageTk.PhotoImage(resized)
 
-    def get_image(self):
-        self.photo.image = self.photo
-        return self.photo
+def get_image(self):
+    self.photo.image = self.photo
+    return self.photo
 
 
 
@@ -51,12 +53,16 @@ def delete_container(container_id):
     container = session.query(Container).filter_by(id=container_id).one()
     session.delete(container)
     session.commit()
-    
 
-def generate_sensor_data(plant_name, container_location):
-    
+def generate_sensor_data(plant_name, container):
+    session = Session()
+
     # Get the container associated with the specified plant
-    container = session.query(Container).join(Container.plant).filter(Plant.plant_name == plant_name, Container.location == container_location).first()
+def generate_sensor_data(plant_name, container):
+    session = Session()
+
+    # Get the container associated with the specified plant
+    container = session.query(Container).join(Container.plant).filter(Plant.plant_name == plant_name).first()
 
     sensor_info = ''
     if container:
@@ -82,6 +88,13 @@ def generate_sensor_data(plant_name, container_location):
                     sensor_info += "Plant has too much light\n"
                 else:
                     sensor_info += f"Plant has {sensor.light} lumens per watt of light\n"
+            elif sensor.sensor_type == 'temperature':
+                sensor.temperature = random.uniform(10, 40)
+                if sensor.temperature < 20:
+                    sensor_info += "Plant is too cold\n"
+                elif sensor.temperature > 30:
+                    sensor_info += "Plant is too hot\n"
+
 
         session.commit()
         session.close()
@@ -89,6 +102,5 @@ def generate_sensor_data(plant_name, container_location):
         return sensor_info
     else:
         session.close()
-        return f"No container found for plant {plant_name} at location {container_location}"
-
+        return f"No container found for plant {plant_name}"
 

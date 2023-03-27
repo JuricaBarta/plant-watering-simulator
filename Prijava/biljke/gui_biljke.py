@@ -4,9 +4,10 @@ from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
 
 
-class PlantsScreen(ttk.Frame):
-    def __init__(self, parent):
-        super().__init__(parent)
+class PlantsScreen(tk.Frame):
+    def __init__(self, parent, notebook):
+        tk.Frame.__init__(self, parent)
+        self.notebook = notebook
         
         self.label = tk.LabelFrame(self, text="Plants Screen")
         self.label.grid(padx=10, pady=10)
@@ -21,13 +22,19 @@ class PlantsScreen(ttk.Frame):
         self.frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
 
+        # Create Refresh button to "reupload" pictures if needed
+        self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
+        self.refresh_button.grid(row=0, column=2, sticky=tk.NE)
+
+        # Create new button that opens new gui window where plants can be created etc.
         self.plant_labelframes = []
         self.add_plant_button = tk.Button(self.label, text="Dodaj novu biljku", command=self.show_new_plant_screen)
-        self.add_plant_button.grid(row=1, column=2, sticky='ne')
+        self.add_plant_button.grid(row=1, column=2, sticky=tk.E, columnspan=2)
 
-            # Add the Refresh button
-        self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
-        self.refresh_button.grid(row=0, column=2, sticky='nw')
+
+        self.view_details_button = tk.Button(self.label, text="View Details", command=self.switch_to_plant_details)
+        self.view_details_button.grid(row=2, column=2, sticky=tk.NS)
+
 
         self.create_plant_labelframes()
 
@@ -96,7 +103,7 @@ class PlantsScreen(ttk.Frame):
 
 
     def update_plant_labelframes(self):
-    # Remove existing plant labels
+        # Remove existing plant labels
         self.frame.destroy()
 
         # Recreate the plant labels based on updated plant data
@@ -120,4 +127,5 @@ class PlantsScreen(ttk.Frame):
             self.canvas.update_idletasks()
             self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
-
+    def switch_to_plant_details(self):
+        self.notebook.select(3)

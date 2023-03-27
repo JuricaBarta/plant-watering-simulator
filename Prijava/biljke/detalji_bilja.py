@@ -1,38 +1,42 @@
 import tkinter as tk
 from tkinter import ttk
-import matplotlib as mb
-from biljke.crud_bilja import CreateNewPlantScreen
+from PIL import Image, ImageTk
+from database import Plant, Container, session
+from crud import *
 
 class PlantDetails(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
+        self.parent = parent
 
-        label = tk.LabelFrame(self, text="Naziv biljke")
-        label.grid(row=0, column=0, pady=10, padx=10)
+        # create widgets for displaying plant details
+        self.plant_image_label = tk.Label(self, width=200, height=200)
+        self.plant_image_label.pack(side=tk.LEFT, padx=10, pady=10)
+        self.plant_name_label = tk.Label(self, text="", font=("Arial", 20, "bold"))
+        self.plant_name_label.pack(side=tk.TOP, padx=10, pady=10)
+        self.plant_desc_label = tk.Label(self, text="")
+        self.plant_desc_label.pack(side=tk.LEFT, padx=10, pady=10)
 
-        sensor_one = tk.Label(label, text="Senzor1")
-        sensor_one.grid(row=0, column=0, pady=10, padx=10)
-        sensor_two = tk.Label(label, text="Senzor2")
-        sensor_two.grid(row=1, column=0, pady=10, padx=10)
-        sensor_three = tk.Label(label, text="Senzor3")
-        sensor_three.grid(row=2, column=0, pady=10, padx=10)
-        sensor_four = tk.Label(label, text="Senzor4")
-        sensor_four.grid(row=3, column=0, pady=10, padx=10)
-        
+    def show_plant(self, plant):
+        # update the plant details labels with the selected plant's info
+        self.plant_image_label.config(image=plant.image)
+        self.plant_image_label.image = plant.image
+        self.plant_name_label.config(text=plant.name)
+        self.plant_desc_label.config(text=plant.description)
 
+    def populate_plant_listbox(self):
+        self.plants = create_plant() # get the list of plant objects
+        for plant in self.plants:
+            self.listbox.insert(tk.END, plant.name)
 
-        button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
-        button_submit.grid(row=0,column=1)
+        # bind the listbox selection event to a method
+        self.listbox.bind("<<ListboxSelect>>", self.on_select)
 
-    def submit_plant(self):
-        # Ovde bi se implementirao kod za spremanje nove biljke u bazu podataka
-        print("Nova biljka je spremljena.")
-
-    def open_creator_window(self):
-        button = tk.Button(self, text="Go to Tab 1",
-                        command=self.open_new_plant_screen)
-        button.grid(row=1,column=1)
-
-    def open_new_plant_screen(self):
-        create_new_plant_screen = CreateNewPlantScreen()
-        create_new_plant_screen.grid(row=2,column=1)
+    def on_select(self, event):
+        # get the selected plant from the listbox
+        widget = event.widget
+        selection = widget.curselection()
+        if selection:
+            index = selection[0]
+            plant = self.plants[index]
+            self.show_plant(plant)
