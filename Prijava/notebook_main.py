@@ -5,6 +5,7 @@ from PyPosude.gui_posude import ContainersScreen
 from PyPosude.detalji_posude import ContainerDetails
 from biljke.gui_biljke import PlantsScreen
 from biljke.detalji_bilja import PlantDetails
+from crud import *
 
 class MainScreen(tk.Tk):
     def __init__(self):

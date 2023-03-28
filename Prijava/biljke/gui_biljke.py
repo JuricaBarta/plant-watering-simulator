@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
+from PIL import Image, ImageTk
 
 
 class PlantsScreen(tk.Frame):
@@ -26,7 +27,7 @@ class PlantsScreen(tk.Frame):
         self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
         self.refresh_button.grid(row=0, column=2, sticky=tk.NE)
 
-        # Create new button that opens new gui window where plants can be created etc.
+        """# Create new button that opens new gui window where plants can be created etc.
         self.plant_labelframes = []
         self.add_plant_button = tk.Button(self.label, text="Dodaj novu biljku", command=self.show_new_plant_screen)
         self.add_plant_button.grid(row=1, column=2, sticky=tk.E, columnspan=2)
@@ -69,7 +70,7 @@ class PlantsScreen(tk.Frame):
 
             plant_label = tk.Label(labelframe_plant)
             plant_picture_in = PlantImage(self.plant_images[i])
-            plant_label['image'] = plant_picture_in.get_image()
+            plant_label['image'] = plant_picture_in.get_plant_images_by_plant_id()
             plant_label.grid(row=0, column=0)
 
             plant_name_label = tk.Label(labelframe_plant, text=f"{plant_name} Plant")
@@ -99,7 +100,7 @@ class PlantsScreen(tk.Frame):
             plant_picture = PlantImage(plant_image)
             plant_label.config(image=plant_picture.get_image())
         plant_name_label = labelframe_plant.grid_slaves(row=1, column=0)[0]
-        plant_name_label.config(text=f"{plant_name} Plant")
+        plant_name_label.config(text=f"{plant_name} Plant")"""
 
 
     def update_plant_labelframes(self):
