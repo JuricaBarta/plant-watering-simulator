@@ -1,38 +1,55 @@
 import tkinter as tk
 from tkinter import ttk
-import matplotlib as mb
-from PyPosude.crud_posude import CreateNewContainerScreen
+from crud import *
+from database import *
 
 class ContainerDetails(tk.Frame):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+    def __init__(self, parent, container_name):
+        super().__init__(parent)
 
-        label = tk.LabelFrame(self, text="Naziv PyPosude")
-        label.grid(row=0, column=0, pady=10, padx=10)
+        self.label = ttk.LabelFrame(self, text=f"Details for container {container_name}")
+        self.label.grid(padx=10, pady=10)
 
-        sensor_one = tk.Label(label, text="Senzor1")
-        sensor_one.grid(row=0, column=0, pady=10, padx=10)
-        sensor_two = tk.Label(label, text="Senzor2")
-        sensor_two.grid(row=1, column=0, pady=10, padx=10)
-        sensor_three = tk.Label(label, text="Senzor3")
-        sensor_three.grid(row=2, column=0, pady=10, padx=10)
-        sensor_four = tk.Label(label, text="Senzor4")
-        sensor_four.grid(row=3, column=0, pady=10, padx=10)
+        # Add labels to display data from container 1 in tab 2
+        label1 = tk.Label(self.label, text=f"Container name: {container_name}")
+        label1.pack(pady=5)
+
+        label2 = tk.Label(self.label, text="Sensor data:")
+        label2.pack(pady=5)
+
+        # Create a frame to contain the sensor data labels
+        sensor_frame = tk.Frame(self.label)
+        sensor_frame.pack(side=tk.TOP)
+
+        # Create labels to display the sensor data
+        """moisture_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        moisture_label.pack(side=tk.TOP, padx=5, pady=5)
         
+        light_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        light_label.pack(side=tk.TOP, padx=5, pady=5)
+        
+        soil_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        soil_label.pack(side=tk.TOP, padx=5, pady=5)
 
+        # Add a button to switch back to tab 1
+        button = tk.Button(self.label, text="Go back to Containers", command=self.switch_to_tab1)
+        button.pack(pady=10)"""
 
-        button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
-        button_submit.grid(row=0,column=1)
+    def generate_sensor_data(self, sensor_type, ideal=False):
+        if not ideal:
+            if sensor_type == "Moisture":
+                return f"Moisture: {random.uniform(0, 100):.2f}%"
+            elif sensor_type == "Light":
+                return f"Light: {random.uniform(0, 10000):.2f} lm"
+            elif sensor_type == "Soil":
+                return f"Soil: {random.uniform(0, 14):.1f}ph" 
+        else:
+            if sensor_type == "Moisture":
+                return "Moisture: 40.00%"
+            elif sensor_type == "Light":
+                return "Light: 5000.00 lm"
+            elif sensor_type == "Soil":
+                return "Soil: 7.00 ph"
 
-    def submit_plant(self):
-        # Ovde bi se implementirao kod za spremanje nove biljke u bazu podataka
-        print("Nova biljka je spremljena.")
-
-    def open_creator_window(self):
-        button = tk.Button(self, text="Go to Tab 1",
-                        command=self.open_new_plant_screen)
-        button.grid(row=1,column=1)
-
-    def open_new_plant_screen(self):
-        create_new_plant_screen = CreateNewContainerScreen()
-        create_new_plant_screen.grid(row=2,column=1)
+    def switch_to_tab1(self):
+        self.master.switch_frame("ContainersScreen")

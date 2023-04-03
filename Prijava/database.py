@@ -2,8 +2,10 @@ from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 import random
+from datetime import datetime
+import os
 
-# Klasa Korisnika
+
 Base = declarative_base()
 
 class User(Base):
@@ -21,74 +23,85 @@ class User(Base):
         self.username = username
         self.password = password
 
-# Klasa Bilja
 class Plant(Base):
     __tablename__ = "plants"
 
     plant_id = Column(Integer, primary_key=True)
     plant_name = Column(String, nullable=False)
-    plant_image = Column(String)
-
+    plant_description_one = Column(String)
+    plant_description_two = Column(String)
+    plant_images = relationship('PlantImage', back_populates='plant')
     containers = relationship('Container', back_populates='plant')
-    sensors = relationship('Sensor', back_populates='plant')
 
-    def __init__(self, plant_name, plant_image=None):
-
+    def __init__(self, plant_name, plant_description_one=None, plant_description_two=None):
         self.plant_name = plant_name
-        self.plant_image = plant_image
+        self.plant_description_one = plant_description_one
+        self.plant_description_two = plant_description_two
 
+
+class PlantImage(Base):
+    __tablename__ = 'plant_image'
+
+    id = Column(Integer, primary_key=True)
+    plant_image_name = Column(String(100), nullable=False)
+    plant_id = Column(Integer, ForeignKey('plants.plant_id'), nullable=False)
+    image_path = Column(String(200), nullable=False)
+
+    plant = relationship('Plant', back_populates='plant_images')
+
+    def __repr__(self):
+        return f"<PlantImage {self.plant_image_name}>"
 
 class Container(Base):
     __tablename__ = "containers"
 
     container_id = Column(Integer, primary_key=True)
-    location = Column(String, nullable=False)
+    container_material = Column(String)
+    container_location = Column(String, nullable=False)
     plant_id = Column(Integer, ForeignKey('plants.plant_id'))
+    
     plant = relationship('Plant', back_populates='containers')
     sensors = relationship('Sensor', back_populates='container')
 
-    def __init__(self, location, plant_name):
-        plant = session.query(Plant).filter_by(plant_name=plant_name).first()
-        if plant is None:
-            plant = Plant(plant_name="Acer")
-            session.add(plant)
-            session.commit()
-
-        self.location = location
-        self.plant = plant
-
-
+    def __init__(self, container_material, container_location):
+        self.container_location = container_location
+        self.container_material = container_material
 
 class Sensor(Base):
     __tablename__ = "sensors"
 
     id = Column(Integer, primary_key=True)
-    plant_id = Column(Integer, ForeignKey('plants.plant_id'))
     sensor_type = Column(String, nullable=False)
-    sensor_location = Column(String, nullable=False)
-    plant = relationship('Plant', back_populates='sensors')
-    container_id = Column(Integer, ForeignKey('containers.container_id'))
-    container = relationship('Container', back_populates='sensors')
     moisture = Column(Float)
     light = Column(Float)
-    substrate_recommendation = Column(String)
+    soil = Column(Float)
 
-    def __init__(self, sensor_type, sensor_location, container, moisture, light, substrate_recommendation):
+    container_id = Column(Integer, ForeignKey('containers.container_id'))
+    container = relationship('Container', back_populates='sensors')
+
+    def __init__(self, sensor_type, container_id, moisture=None, light=None, soil=None):
+        container = session.query(Container).filter_by(container_id=container_id).first()
+        if container is None:
+            raise ValueError(f"Container with id {container_id} does not exist in the database.")
+
         self.sensor_type = sensor_type
-        self.sensor_location = sensor_location
         self.container = container
-        self.plant = container.plant
-        self.moisture = moisture
-        self.light = light
-        self.substrate_recommendation = substrate_recommendation
+        if moisture is not None:
+            self.moisture = moisture
+        if light is not None:
+            self.light = light
+        if soil is not None:
+            self.soil = soil
+
 
 
 # Kreiranje baze podataka i dodavanje korisnika u tablicu
-engine = create_engine("sqlite:///users.db")
+engine = create_engine("sqlite:///database.db")
 Base.metadata.create_all(engine)
-
 Session = sessionmaker(bind=engine)
 session = Session()
+
+#Class User
 
 result = session.query(User).count()
 if result == 0:
@@ -107,54 +120,101 @@ if result == 0:
     print(f"user2: Name: {user2.name} Surname: {user2.surname} Username: {user2.username} Password: {user2.password}")
     print(f"user3: Name: {user3.name} Surname: {user3.surname} Username: {user3.username} Password: {user3.password}")
 else:
-    print("Tablica korisnika je već popunjena.")
+    print("Users have already been saved in the database.")
 
-    
-# kreiranje 10 biljaka samo ako ih nema u bazi
-plant_names = ['Acer', 'Anthurium', 'Bamboo', 'Calla', 'Davallia Fejeensis',
-               'Dracena Marginata', 'Epipremnum', 'Monstera Deliciosa',
-               'Pillea Elefantore', 'Spatifilum']
-for plant_name in plant_names:
-    plant = session.query(Plant).filter_by(plant_name=plant_name).first()
-    if plant is None:
-        plant = Plant(plant_name=plant_name)
+# Class Plant
+
+if session.query(Plant).count() == 0:
+    plant_names = ['Acer', 'Anthurium', 'Bamboo', 'Calla', 'Davallia Fejeensis',
+                'Dracena Marginata', 'Epipremnum', 'Monstera Deliciosa',
+                'Pillea Elefantore', 'Spatifilum']
+    plant_descriptions = {
+        'Acer': ('Deciduous tree', 'Known for its colorful foliage'),
+        'Anthurium': ('Tropical plant', 'Produces heart-shaped flowers'),
+        'Bamboo': ('Fast-growing grass', 'Used for construction and as food for animals'),
+        'Calla': ('Perennial herb', 'Produces trumpet-shaped flowers'),
+        'Davallia Fejeensis': ('Epiphytic fern', 'Native to Fiji'),
+        'Dracena Marginata': ('Evergreen tree', 'Long, slender leaves with red edges'),
+        'Epipremnum': ('Epiphytic vine', 'Often used as a houseplant'),
+        'Monstera Deliciosa': ('Tropical vine', 'Produces large, perforated leaves'),
+        'Pillea Elefantore': ('Herbaceous perennial', 'Also known as "Chinese money plant"'),
+        'Spatifilum': ('Flowering plant', 'Produces white or pink flowers')
+    }
+    for plant_name in plant_names:
+        plant_description = plant_descriptions[plant_name]
+        plant = Plant(plant_name=plant_name,
+                    plant_description_one=plant_description[0],
+                    plant_description_two=plant_description[1])
         session.add(plant)
         session.commit()
-        
-"""plant_image =['acer.jpg', 'anthurium.jpg',  'bamboo.jpg', 'calla.jpg',
-              'davallia_fejeensis.jpg',  'dracena_marginata.jpg',
-              'epipremnum.jpg',  'monstera_deliciosa.jpg',
-              'pillea_elefantore.jpg', 'spatifilum.jpg']"""
+else:
+    print("Plants have already been saved in the database.")
 
-# kreiranje 10 posuda samo ako ih nema u bazi
-locations = ['Kitchen', 'Balcony', 'Living room']
-for i, plant_name in enumerate(plant_names):
-    container = session.query(Container).filter_by(location=locations[i % len(locations)]).first()
-    if container is None:
-        container = Container(location=locations[i % len(locations)], plant_name=plant_name)
-        session.add(container)
+
+plant_image_names = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg', 'calla.jpg',
+                     'davallia_fejeensis.jpg', 'dracena_marginata.jpg',
+                     'epipremnum.jpg', 'monstera_deliciosa.jpg',
+                     'pillea_elefantore.jpg', 'spatifilum.jpg']
+
+if session.query(PlantImage).count() == 0:
+    # Directory containing the plant images
+    plant_images_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Get a list of unique plant names
+    plant_names = [plant.plant_name for plant in session.query(Plant.plant_name).distinct()]
+
+    for i, plant_name in enumerate(plant_names):
+        plant = session.query(Plant).filter_by(plant_name=plant_name).first()
+
+        # Create the image path based on the plant image name and the directory containing the images
+        image_path = os.path.join(plant_images_dir, plant_image_names[i])
+
+        # Create a new PlantImage instance and add it to the session
+        plant_image = PlantImage(plant_image_name=plant_image_names[i],
+                                 plant=plant,
+                                 image_path=image_path) 
+        session.add(plant_image)
         session.commit()
+else:
+    print("Plant images have already been saved in the database.")
 
 
-# create a sensor for each container and plant
-for container in session.query(Container).all():
-    plant = container.plant
-    sensor_type = random.choice(['moisture', 'light'])
-    sensor_location = container.location
-    moisture = random.uniform(0, 1)
-    light = random.uniform(0, 1)
-    substrate_recommendation = f"Use a well-draining substrate for {plant.plant_name}"
+#Class Container
+# kreiranje 3 posuda samo ako ih nema u bazi
+if session.query(Container).count() == 0:
+    container_locations = ['Kitchen', 'Balcony', 'Living room']
+    for i, plant_name in enumerate(plant_names):
+        for j in range(1):
+            container = session.query(Container).filter_by(container_location=f"{container_locations[i % len(container_locations)]}-{j}").first()
+            if container is None and plant is not None:
+                container = Container(container_material='material', container_location=f"{container_locations[i % len(container_locations)]}-{j}")
+                container.plant = plant
+                session.add(container)
+                session.commit()
+else:
+    print("Containers have already been saved in the database.")
 
-    sensor = Sensor(sensor_type=sensor_type,
-                    sensor_location=sensor_location,
-                    container=container,
-                    moisture=moisture,
-                    light=light,
-                    substrate_recommendation=substrate_recommendation)
 
-    session.add(sensor)
-    session.commit()
+# Class Sensor
 
-print("Sensors are successfully added to the database.")
+# create sensors for the newly created containers
+if session.query(Sensor).count() == 0:
+    for sensor_type in ['moisture', 'light', 'soil']:
+        for container_location in container_locations:
+            for j in range(1):
+                container = session.query(Container).filter_by(container_location=f"{container_location}-{j}").first()
+                moisture = random.uniform(0, 100) if sensor_type == 'moisture' else None
+                light = random.uniform(0, 2000) if sensor_type == 'light' else None
+                soil = random.uniform(0, 10) if sensor_type == 'soil' else None
 
+                sensor = Sensor(sensor_type=sensor_type,
+                        container_id=container.container_id,
+                        moisture=moisture,
+                        light=light,
+                        soil=soil)
+
+                session.add(sensor)
+                session.commit()
+else:
+    print("Sensors have already been saved in the database.")
 

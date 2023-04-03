@@ -1,51 +1,57 @@
 import requests
 import tkinter as tk
 from tkinter import ttk
-from crud import PlantImage, generate_sensor_readings, generate_readings
+from crud import *
 from PyPosude.crud_posude import CreateNewContainerScreen
 from PyPosude.detalji_posude import ContainerDetails
 import random 
 
 class ContainersScreen(ttk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, main_screen):
         super().__init__(parent)
+        self.main_screen = main_screen
 
-        self.label = tk.LabelFrame(self, text="Containers Screen")
+        self.label = ttk.LabelFrame(self, text="Containers Screen")
         self.label.grid(padx=10, pady=10)
 
-        self.canvas = tk.Canvas(self.label, highlightthickness=0, height=500, width=640)
+        self.canvas = tk.Canvas(self.label, highlightthickness=0, height=600, width=640)
         self.canvas.grid(sticky='nsew')
 
-        scrollbar = tk.Scrollbar(self.label,  orient=tk.VERTICAL, command=self.canvas.yview)
-        scrollbar.grid(row=0, column=1, sticky='ns')
-        self.canvas.config(yscrollcommand=scrollbar.set)
+        scrollbar_y = ttk.Scrollbar(self.label, orient=tk.VERTICAL, command=self.canvas.yview)
+        scrollbar_y.grid(row=0, column=1, sticky='ns')
+        self.canvas.config(yscrollcommand=scrollbar_y.set)
+
+        scrollbar_x = ttk.Scrollbar(self.label, orient=tk.HORIZONTAL, command=self.canvas.xview)
+        scrollbar_x.grid(row=1, column=0, sticky='ew')
+        self.canvas.config(xscrollcommand=scrollbar_x.set)
 
         self.frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
 
         self.container_labelframes = []
         self.add_container_button = tk.Button(self.label, text="Dodaj novu PyPosudu", command=self.show_new_container_screen)
-        self.add_container_button.grid(row=1, column=2, sticky='ne')
+        self.add_container_button.grid(row=1, column=2, padx=5, pady=5)
 
+        sync_button = tk.Button(self.label, text="SYNC", command=lambda: self.sync_screen(sensor_type, "Moisture"))
+        sync_button.grid(row=0, column=1, padx=5, pady=5)
 
         refresh_button = tk.Button(self.label, text="Refresh", command=self.refresh_screen)
-        refresh_button.grid(row=0, column=2)
+        refresh_button.grid(row=0, column=2, padx=5, pady=5)
+
+        self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.switch_to_tab2(container_name=""))
+        self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
 
         self.create_container_labelframes()
 
         self.frame.bind('<Configure>', self.on_frame_configure)
 
-    def on_frame_configure(self, event):
+    def on_frame_configure(self):
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
     def create_container_labelframes(self):
-        self.plant_names = [
-            'Acer', 'Anthurium', 'Bamboo'
-        ]
-
-        self.plant_images = [
-            'acer.jpg', 'anthurium.jpg', 'bamboo.jpg'
-        ]
+        self.plant_names = ['Acer', 'Anthurium', 'Bamboo']
+        self.plant_images = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg']
+        sensor_types = ["Moisture", "Light", "Soil"]
 
         for i, plant_name in enumerate(self.plant_names):
             column = i % 2
@@ -54,37 +60,49 @@ class ContainersScreen(ttk.Frame):
             labelframe_container = tk.LabelFrame(self.frame)
             labelframe_container.grid(row=row, column=column, padx=10, pady=10)
 
-            container_label = tk.Label(labelframe_container)
+            # Create a button instead of a label
+            button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.switch_to_tab2(container_name))
+            button_container.grid(row=0, column=0)
+
+            # Set the button image
             plant_picture_in = PlantImage(self.plant_images[i])
-            container_label['image'] = plant_picture_in.get_image()
-            container_label.grid(row=0, column=0)
-        
+            button_container.config(image=plant_picture_in.get_image(), compound=tk.TOP)
 
-            container_name_label = tk.Label(labelframe_container, text=f"{plant_name} Plant")
-            container_name_label.grid(row=1, column=0, pady=10, padx=10)
 
-            container_sensors = tk.Label(labelframe_container)
-            #sensor_in_label = generate_readings(sensor_type='')
-            #container_sensors['sensor'] =  sensor_in_label.generate_sensor_readings()
-            container_sensors.grid(row=0, column=1, pady=10, padx=10)
+            sensor_frame = tk.Frame(labelframe_container)
+            sensor_frame.grid(row=0, column=1, rowspan=2, sticky='nsew', padx=10)
 
-            """container_id = i + 1
-            sensors = generate_sensor_readings(container_id)
+            for sensor_type in sensor_types:
+                sensor_reading = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+                sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
 
-            if sensors:
-                sensor_info = "Sensors: "
-                for sensor in sensors:
-                    sensor_info += f"{sensor.sensor_type} ({sensor.sensor_location}), "
 
-                # Remove the trailing comma and space
-                sensor_info = sensor_info[:-2]
-            else:
-                sensor_info = "No sensors found."
+    def add_sensor(self, sensor_type, container_id):
+        # Generate random sensor data
+        moisture = random.uniform(0, 100)
+        light = random.uniform(0, 10000)
+        soil = random.uniform(0, 14)
 
-            container_sensors.config(text=sensor_info)
+        # Create sensor in database
+        create_sensor(sensor_type=sensor_type, container_id=container_id, moisture=moisture, light=light, soil=soil)
 
-            view_details_button = tk.Button(labelframe_container, text="View Details", command=lambda container_id=container_id: self.show_container_details(container_id))
-            view_details_button.grid(row=1, column=1, pady=10)"""
+    def generate_sensor_data(self, sensor_type, ideal=False):
+        if not ideal:
+            if sensor_type == "Moisture":
+                return f"Moisture: {random.uniform(0, 100):.2f}%"
+            elif sensor_type == "Light":
+                return f"Light: {random.uniform(0, 10000):.2f} lm"
+            elif sensor_type == "Soil":
+                return f"Soil: {random.uniform(0, 14):.1f}ph" 
+        else:
+            if sensor_type == "Moisture":
+                return "Moisture: 40.00%"
+            elif sensor_type == "Light":
+                return "Light: 5000.00 lm"
+            elif sensor_type == "Soil":
+                return "Soil: 7.00 ph"
+
+            
 
     def show_container_details(self, container_id):
         container_details_screen = ContainerDetails(self.master, container_id)
@@ -100,4 +118,28 @@ class ContainersScreen(ttk.Frame):
 
         self.container_labelframes = []
         self.create_container_labelframes()
+
+    def sync_screen(self, label, sensor_type):
+        sensor_reading = self.generate_sensor_data(sensor_type, ideal=True)
+        label.config(text=sensor_reading)
+
+
+    def switch_to_tab2(self, container_name):
+        for tab in self.notebook.tabs():
+            # Check if the tab has the same name as "Detalji posude"
+            if self.notebook.tab(tab, "text") == "Detalji posude":
+                # Get the container details instance associated with the tab
+                tab2 = self.notebook.nametowidget(tab)
+                # Pass the container_name data to the instance
+                tab2.set_container_name(container_name)
+                # Switch to the existing tab
+                self.notebook.select(tab)
+                return
+        # If the "Detalji posude" tab does not exist, create it
+        tab2 = ContainerDetails(self.notebook, container_name=container_name)
+        self.notebook.add(tab2, text="Detalji posude")
+        self.notebook.select(tab2)
+
+
+
 
