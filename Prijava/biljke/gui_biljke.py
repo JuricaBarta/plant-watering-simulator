@@ -2,13 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
-from PIL import Image, ImageTk
 
 
-class PlantsScreen(tk.Frame):
-    def __init__(self, parent, notebook):
-        tk.Frame.__init__(self, parent)
-        self.notebook = notebook
+class PlantsScreen(ttk.Frame):
+    def __init__(self, parent):
+        super().__init__(parent)
         
         self.label = tk.LabelFrame(self, text="Plants Screen")
         self.label.grid(padx=10, pady=10)
@@ -23,19 +21,13 @@ class PlantsScreen(tk.Frame):
         self.frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
 
-        # Create Refresh button to "reupload" pictures if needed
-        self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
-        self.refresh_button.grid(row=0, column=2, sticky=tk.NE)
-
-        """# Create new button that opens new gui window where plants can be created etc.
         self.plant_labelframes = []
         self.add_plant_button = tk.Button(self.label, text="Dodaj novu biljku", command=self.show_new_plant_screen)
-        self.add_plant_button.grid(row=1, column=2, sticky=tk.E, columnspan=2)
+        self.add_plant_button.grid(row=1, column=2, sticky='ne')
 
-
-        self.view_details_button = tk.Button(self.label, text="View Details", command=self.switch_to_plant_details)
-        self.view_details_button.grid(row=2, column=2, sticky=tk.NS)
-
+            # Add the Refresh button
+        self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
+        self.refresh_button.grid(row=0, column=2, sticky='nw')
 
         self.create_plant_labelframes()
 
@@ -70,7 +62,7 @@ class PlantsScreen(tk.Frame):
 
             plant_label = tk.Label(labelframe_plant)
             plant_picture_in = PlantImage(self.plant_images[i])
-            plant_label['image'] = plant_picture_in.get_plant_images_by_plant_id()
+            plant_label['image'] = plant_picture_in.get_image()
             plant_label.grid(row=0, column=0)
 
             plant_name_label = tk.Label(labelframe_plant, text=f"{plant_name} Plant")
@@ -100,11 +92,11 @@ class PlantsScreen(tk.Frame):
             plant_picture = PlantImage(plant_image)
             plant_label.config(image=plant_picture.get_image())
         plant_name_label = labelframe_plant.grid_slaves(row=1, column=0)[0]
-        plant_name_label.config(text=f"{plant_name} Plant")"""
+        plant_name_label.config(text=f"{plant_name} Plant")
 
 
     def update_plant_labelframes(self):
-        # Remove existing plant labels
+    # Remove existing plant labels
         self.frame.destroy()
 
         # Recreate the plant labels based on updated plant data
@@ -128,5 +120,4 @@ class PlantsScreen(tk.Frame):
             self.canvas.update_idletasks()
             self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
-    def switch_to_plant_details(self):
-        self.notebook.select(3)
+

@@ -1,63 +1,55 @@
 import tkinter as tk
 from tkinter import ttk
-import matplotlib as mb
-#from PyPosude.crud_posude import CreateNewContainerScreen
-from PyPosude.gui_posude import *
-import matplotlib.pyplot as plt
-#from crud import generate_sensor_data
-from database import Container
+from crud import *
+from database import *
 
-class ContainerDetails(ttk.Frame):
-    def __init__(self, parent, session, container_id):
+class ContainerDetails(tk.Frame):
+    def __init__(self, parent, container_name):
         super().__init__(parent)
-        self.session = session
-        self.container_id = container_id
 
-        self.container_id_label = tk.Label(self, text="Container ID:")
-        self.container_id_label.grid(row=0, column=0, padx=10, pady=10, sticky='w')
+        self.label = ttk.LabelFrame(self, text=f"Details for container {container_name}")
+        self.label.grid(padx=10, pady=10)
 
-        self.container_id_value_label = tk.Label(self, text="")
-        self.container_id_value_label.grid(row=0, column=1, padx=10, pady=10, sticky='w')
+        # Add labels to display data from container 1 in tab 2
+        label1 = tk.Label(self.label, text=f"Container name: {container_name}")
+        label1.pack(pady=5)
 
-        self.sensor_info_label = tk.Label(self, text="")
-        self.sensor_info_label.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
+        label2 = tk.Label(self.label, text="Sensor data:")
+        label2.pack(pady=5)
 
-    """def show_container_details(self, container_id):
-        container = self.session.query(Container).filter_by(container_id=container_id).first()
-        sensors = container.sensors
+        # Create a frame to contain the sensor data labels
+        sensor_frame = tk.Frame(self.label)
+        sensor_frame.pack(side=tk.TOP)
 
-        # Get sensor readings for each sensor in the container
-        sensor_data = {}
-        for i, sensor in enumerate(sensors):
-            sensor_data[sensor] = generate_sensor_data(container_id.plant_id.sensor_location)
+        # Create labels to display the sensor data
+        """moisture_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        moisture_label.pack(side=tk.TOP, padx=5, pady=5)
+        
+        light_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        light_label.pack(side=tk.TOP, padx=5, pady=5)
+        
+        soil_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        soil_label.pack(side=tk.TOP, padx=5, pady=5)
 
-        # Plot the sensor data
-        plt.figure(figsize=(10, 6))
-        plt.title("Sensor Readings for Container {}".format(container_id))
-        for i, (sensor, data) in enumerate(sensor_data.items()):
-            plt.plot(data, label="Sensor {}".format(i+1))
+        # Add a button to switch back to tab 1
+        button = tk.Button(self.label, text="Go back to Containers", command=self.switch_to_tab1)
+        button.pack(pady=10)"""
 
-        plt.xlabel("Time")
-        plt.ylabel("Sensor Reading")
-        plt.legend()
-        plt.show()
+    def generate_sensor_data(self, sensor_type, ideal=False):
+        if not ideal:
+            if sensor_type == "Moisture":
+                return f"Moisture: {random.uniform(0, 100):.2f}%"
+            elif sensor_type == "Light":
+                return f"Light: {random.uniform(0, 10000):.2f} lm"
+            elif sensor_type == "Soil":
+                return f"Soil: {random.uniform(0, 14):.1f}ph" 
+        else:
+            if sensor_type == "Moisture":
+                return "Moisture: 40.00%"
+            elif sensor_type == "Light":
+                return "Light: 5000.00 lm"
+            elif sensor_type == "Soil":
+                return "Soil: 7.00 ph"
 
-        # Update the container ID label
-        self.container_id_value_label.configure(text=str(container_id))
-
-        # Initialize the sensor information string
-        sensor_info = ""
-
-        # Loop over all sensors in the container and add their information to the sensor information string
-        for sensor in Container.sensors:
-            sensor_info += f"Location: {sensor.sensor_location}\n"
-            if sensor.moisture is not None:
-                sensor_info += f"Moisture reading: {sensor.moisture:.2f}\n"
-            if sensor.light is not None:
-                sensor_info += f"Light reading: {sensor.light}\n"
-            sensor_info += f"Substrate recommendation: {sensor.substrate_recommendation}\n\n"
-
-        # Update the sensor information label
-         
-        self.sensor_info_label.configure(text="\n".join(sensor_data.values()))"""
-
+    def switch_to_tab1(self):
+        self.master.switch_frame("ContainersScreen")

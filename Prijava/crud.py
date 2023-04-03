@@ -1,12 +1,26 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime
 from database import *
+from PIL import Image, ImageTk
+import random
 
-engine = create_engine("sqlite:///database.db")
-Session = sessionmaker(bind=engine)
-session = Session()
+class PlantImage:
+    def __init__(self, filename, size=(150, 200)):
+        self.filename = filename
+        self.size = size
+        self.photo = self.open_and_resize() 
+    
+    def open_and_resize(self):
+        picture = Image.open(self.filename)
+        resized = picture.resize(self.size, Image.LANCZOS)
+        return ImageTk.PhotoImage(resized)
+
+    def get_image(self):
+        self.photo.image = self.photo
+        return self.photo
+
+
 
 # CREATE
 def create_user(name, surname, username, password):
@@ -49,7 +63,6 @@ def create_sensor(sensor_type, container_id, moisture=None, light=None, soil=Non
     session.commit()
     return sensor
 
-
 # READ
 def get_user_by_id(user_id):
     return session.query(User).get(user_id)
@@ -64,7 +77,10 @@ def get_plant_by_id(plant_id):
     return session.query(Plant).get(plant_id)
 
 def get_plant_images_by_plant_id(plant_id):
-    return session.query(PlantImage).filter_by(plant_id=plant_id).all()
+    if isinstance(plant_id, list):
+        return session.query(PlantImage).filter(*[PlantImage.plant_id == p for p in plant_id]).all()
+    else:
+        return session.query(PlantImage).filter_by(plant_id=plant_id).all()
 
 def get_containers_by_plant_id(plant_id):
     return session.query(Container).filter_by(plant_id=plant_id).all()
@@ -191,11 +207,15 @@ def delete_sensor(session: Session, sensor_id: int):
 
 # GENERATE DATA
 
-def generate_sensor_data():
-    moisture = round(random.uniform(0, 100), 2)
-    light = round(random.uniform(0, 100), 2)
-    soil = round(random.uniform(0, 100), 2)
-    return (moisture, light, soil)
+def generate_sensor_data(sensor_type):
+    if sensor_type == "moisture":
+        return random.uniform(0.0, 100.0)
+    elif sensor_type == "light":
+        return random.uniform(0.0, 2000.0)
+    elif sensor_type == "substrate":
+        return random.choice(["add compost", "add vermiculite", "add perlite"])
+    else:
+        raise ValueError(f"Invalid sensor type: {sensor_type}")
 
 def generate_user():
     name = name()
@@ -229,11 +249,12 @@ def generate_sensor(container_id):
     container = session.query(Container).get(container_id)
     if container is None:
         raise ValueError(f"Container with id {container_id} does not exist in the database.")
-    sensor_type = sensor_type()
-    moisture = random.randint(0, 100, 2)
-    light = random.randint(0, 100, 2)
-    soil = random.randint(0, 100, 2)
+    sensor_type = random.choice(['Moisture', 'Light', 'Soil'])
+    moisture = random.randint(0, 100)
+    light = random.randint(0, 100)
+    soil = random.randint(0, 100)
     return create_sensor(sensor_type, container_id, moisture, light, soil)
+
 
 """# HELPER FUNCTIONS
 
