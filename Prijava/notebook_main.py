@@ -9,7 +9,6 @@ from biljke.detalji_bilja import PlantDetails
 from crud import *
 from database import *
 
-
 class MainScreen(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -18,8 +17,8 @@ class MainScreen(tk.Tk):
 
         self.notebook = ttk.Notebook(self)
         tab1 = ContainersScreen(self.notebook, self)
-        tab2 = ContainerDetails(self.notebook, container_name="")
-        tab3 = PlantsScreen(self.notebook)
+        tab2 = ContainerDetails(self.notebook, self)
+        tab3 = PlantsScreen(self.notebook, self)
         tab4 = PlantDetails(self.notebook)
 
         self.notebook.add(tab1, text="Posude")
@@ -29,11 +28,15 @@ class MainScreen(tk.Tk):
 
         self.notebook.pack(fill="both", expand=True)
 
-    def switch_to_tab2(self, container_name):
-    # switch to Tab2
+    def switch_to_tab2(self):
         self.notebook.select(1)
-        # get the instance of the ContainerDetails class associated with Tab2
-        tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
+        #tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
+
+    def switch_to_tab4(self, plant_id):
+        self.notebook.select(3)
+        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])
+        tab4.update_plant_details(plant_id)
+
 
 if __name__ == '__main__':
     main_screen = MainScreen()

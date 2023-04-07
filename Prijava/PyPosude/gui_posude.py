@@ -1,4 +1,3 @@
-import requests
 import tkinter as tk
 from tkinter import ttk
 from crud import *
@@ -45,8 +44,9 @@ class ContainersScreen(ttk.Frame):
 
         self.frame.bind('<Configure>', self.on_frame_configure)
 
-    def on_frame_configure(self):
+    def on_frame_configure(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
+
 
     def create_container_labelframes(self):
         self.plant_names = ['Acer', 'Anthurium', 'Bamboo']
@@ -60,14 +60,11 @@ class ContainersScreen(ttk.Frame):
             labelframe_container = tk.LabelFrame(self.frame)
             labelframe_container.grid(row=row, column=column, padx=10, pady=10)
 
-            # Create a button instead of a label
             button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.switch_to_tab2(container_name))
             button_container.grid(row=0, column=0)
 
-            # Set the button image
             plant_picture_in = PlantImage(self.plant_images[i])
             button_container.config(image=plant_picture_in.get_image(), compound=tk.TOP)
-
 
             sensor_frame = tk.Frame(labelframe_container)
             sensor_frame.grid(row=0, column=1, rowspan=2, sticky='nsew', padx=10)
@@ -83,7 +80,6 @@ class ContainersScreen(ttk.Frame):
         light = random.uniform(0, 10000)
         soil = random.uniform(0, 14)
 
-        # Create sensor in database
         create_sensor(sensor_type=sensor_type, container_id=container_id, moisture=moisture, light=light, soil=soil)
 
     def generate_sensor_data(self, sensor_type, ideal=False):
@@ -103,7 +99,6 @@ class ContainersScreen(ttk.Frame):
                 return "Soil: 7.00 ph"
 
             
-
     def show_container_details(self, container_id):
         container_details_screen = ContainerDetails(self.master, container_id)
         container_details_screen.grid()
@@ -123,22 +118,17 @@ class ContainersScreen(ttk.Frame):
         sensor_reading = self.generate_sensor_data(sensor_type, ideal=True)
         label.config(text=sensor_reading)
 
-
     def switch_to_tab2(self, container_name):
-        for tab in self.notebook.tabs():
-            # Check if the tab has the same name as "Detalji posude"
-            if self.notebook.tab(tab, "text") == "Detalji posude":
-                # Get the container details instance associated with the tab
-                tab2 = self.notebook.nametowidget(tab)
-                # Pass the container_name data to the instance
+        for tab in self.main_screen.notebook.tabs():
+            if self.main_screen.notebook.tab(tab, "text") == "Detalji posude":
+                tab2 = self.main_screen.notebook.nametowidget(tab)
                 tab2.set_container_name(container_name)
-                # Switch to the existing tab
-                self.notebook.select(tab)
+                self.main_screen.notebook.select(tab)
                 return
-        # If the "Detalji posude" tab does not exist, create it
-        tab2 = ContainerDetails(self.notebook, container_name=container_name)
-        self.notebook.add(tab2, text="Detalji posude")
-        self.notebook.select(tab2)
+        tab2 = ContainerDetails(self.main_screen.notebook, container_name=container_name)
+        self.main_screen.notebook.add(tab2, text="Detalji posude")
+        self.main_screen.notebook.select(tab2)
+
 
 
 

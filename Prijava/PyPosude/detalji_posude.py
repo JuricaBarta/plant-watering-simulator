@@ -6,6 +6,7 @@ from database import *
 class ContainerDetails(tk.Frame):
     def __init__(self, parent, container_name):
         super().__init__(parent)
+        self.container_name = container_name
 
         self.label = ttk.LabelFrame(self, text=f"Details for container {container_name}")
         self.label.grid(padx=10, pady=10)
@@ -21,14 +22,17 @@ class ContainerDetails(tk.Frame):
         sensor_frame = tk.Frame(self.label)
         sensor_frame.pack(side=tk.TOP)
 
-        # Create labels to display the sensor data
-        """moisture_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+    def set_container_name(self, container_name):
+        self.container_name = container_name
+
+        """# Create labels to display the sensor data
+        moisture_label = tk.Label(sensor_type, text=self.generate_sensor_data(sensor_type))
         moisture_label.pack(side=tk.TOP, padx=5, pady=5)
         
-        light_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        light_label = tk.Label(sensor_type, text=self.generate_sensor_data(sensor_type))
         light_label.pack(side=tk.TOP, padx=5, pady=5)
         
-        soil_label = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+        soil_label = tk.Label(sensor_type, text=self.generate_sensor_data(sensor_type))
         soil_label.pack(side=tk.TOP, padx=5, pady=5)
 
         # Add a button to switch back to tab 1

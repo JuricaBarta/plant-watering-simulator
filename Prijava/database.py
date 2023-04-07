@@ -30,13 +30,18 @@ class Plant(Base):
     plant_name = Column(String, nullable=False)
     plant_description_one = Column(String)
     plant_description_two = Column(String)
+    plant_description_three = Column(String)
+    plant_description_four = Column(String)
+    
     plant_images = relationship('PlantImage', back_populates='plant')
     containers = relationship('Container', back_populates='plant')
 
-    def __init__(self, plant_name, plant_description_one=None, plant_description_two=None):
+    def __init__(self, plant_name, plant_description_one=None, plant_description_two=None, plant_description_three=None, plant_description_four=None):
         self.plant_name = plant_name
         self.plant_description_one = plant_description_one
         self.plant_description_two = plant_description_two
+        self.plant_description_three = plant_description_three
+        self.plant_description_four = plant_description_four
 
 
 class PlantImage(Base):
@@ -125,26 +130,30 @@ else:
 # Class Plant
 
 if session.query(Plant).count() == 0:
-    plant_names = ['Acer', 'Anthurium', 'Bamboo', 'Calla', 'Davallia Fejeensis',
-                'Dracena Marginata', 'Epipremnum', 'Monstera Deliciosa',
-                'Pillea Elefantore', 'Spatifilum']
+    plant_names = ["Acer", "Anthurium", "Bamboo", "Calla", "Davallia Fejeensis",
+                "Dracena Marginata", "Epipremnum", "Monstera Deliciosa",
+                "Pillea Elefantore", "Spatifilum"]
+                
     plant_descriptions = {
-        'Acer': ('Deciduous tree', 'Known for its colorful foliage'),
-        'Anthurium': ('Tropical plant', 'Produces heart-shaped flowers'),
-        'Bamboo': ('Fast-growing grass', 'Used for construction and as food for animals'),
-        'Calla': ('Perennial herb', 'Produces trumpet-shaped flowers'),
-        'Davallia Fejeensis': ('Epiphytic fern', 'Native to Fiji'),
-        'Dracena Marginata': ('Evergreen tree', 'Long, slender leaves with red edges'),
-        'Epipremnum': ('Epiphytic vine', 'Often used as a houseplant'),
-        'Monstera Deliciosa': ('Tropical vine', 'Produces large, perforated leaves'),
-        'Pillea Elefantore': ('Herbaceous perennial', 'Also known as "Chinese money plant"'),
-        'Spatifilum': ('Flowering plant', 'Produces white or pink flowers')
+        "Acer": ("Deciduous tree", "Known for its colorful foliage", "Provides a source of maple syrup when tapped during the spring", "Has a wide range of cultivars, including those with unique leaf shapes such as the Japanese maple"),
+        "Anthurium": ("Tropical plant", "Produces heart-shaped flowers", "Has a long blooming period, with flowers lasting up to 8 weeks", "Comes in a variety of colors including pink, red, white, and orange"),
+        "Bamboo": ("Fast-growing grass", "Used for construction and as food for animals", "Contains anti-bacterial and anti-inflammatory properties", "Can absorb up to 12 tons of carbon dioxide per hectare, making it an effective tool against climate change"),
+        "Calla": ("Perennial herb", "Produces trumpet-shaped flowers", "Symbolizes rebirth and resurrection", "Has medicinal uses, such as treatment for swelling and skin irritation"),
+        "Davallia Fejeensis": ("Epiphytic fern", "Native to Fiji", "Also known as the rabbit's foot fern due to its furry rhizomes", "Thrives in low-light environments and is easy to care for"),
+        "Dracena Marginata": ("Evergreen tree", "Long, slender leaves with red edges", "Can grow up to 15 feet tall in optimal conditions", "Air-purifying and removes toxins such as benzene, formaldehyde, and trichloroethylene from the air"),
+        "Epipremnum": ("Epiphytic vine", "Often used as a houseplant", "Can improve indoor air quality by removing pollutants such as formaldehyde, benzene, and xylene", "Has a unique variegated leaf pattern, with shades of green, white, and yellow"),
+        "Monstera Deliciosa": ("Tropical vine", "Produces large, perforated leaves", "Symbolizes the pursuit of knowledge and a thirst for exploration", "Thrives in high humidity environments and is known for its adaptability to various light conditions"),
+        "Pillea Elefantore": ("Herbaceous perennial", 'Also known as "Chinese money plant"', "Symbolizes financial prosperity and good luck", "Thrives in well-draining soil and bright, indirect light"),
+        "Spatifilum": ("Flowering plant", "Produces white or pink flowers", "Symbolizes peace and tranquility", "Air-purifying and removes toxins such as benzene, formaldehyde, and trichloroethylene from the air")
     }
+
     for plant_name in plant_names:
         plant_description = plant_descriptions[plant_name]
         plant = Plant(plant_name=plant_name,
                     plant_description_one=plant_description[0],
-                    plant_description_two=plant_description[1])
+                    plant_description_two=plant_description[1],
+                    plant_description_three=plant_description[2],
+                    plant_description_four=plant_description[3])
         session.add(plant)
         session.commit()
 else:

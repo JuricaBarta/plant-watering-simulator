@@ -1,13 +1,16 @@
 import tkinter as tk
 from tkinter import ttk
+from database import *
 from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
+from biljke.detalji_bilja import PlantDetails
 
 
-class PlantsScreen(ttk.Frame):
-    def __init__(self, parent):
+class PlantsScreen(tk.Frame):
+    def __init__(self, parent, main_screen):
         super().__init__(parent)
-        
+        self.main_screen = main_screen
+
         self.label = tk.LabelFrame(self, text="Plants Screen")
         self.label.grid(padx=10, pady=10)
 
@@ -60,7 +63,8 @@ class PlantsScreen(ttk.Frame):
             labelframe_plant = tk.LabelFrame(self.frame)
             labelframe_plant.grid(row=row, column=column, padx=10, pady=10)
 
-            plant_label = tk.Label(labelframe_plant)
+            plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4(plant_id=i))
+
             plant_picture_in = PlantImage(self.plant_images[i])
             plant_label['image'] = plant_picture_in.get_image()
             plant_label.grid(row=0, column=0)
@@ -69,6 +73,10 @@ class PlantsScreen(ttk.Frame):
             plant_name_label.grid(row=1, column=0, pady=10, padx=10)
 
             self.plant_labelframes.append(labelframe_plant)
+
+    def switch_to_tab4(self, plant_id):
+        self.main_screen.switch_to_tab4(plant_id)
+
 
     def show_new_plant_screen(self):
         new_plant_screen = CreateNewPlantScreen()
@@ -96,7 +104,6 @@ class PlantsScreen(ttk.Frame):
 
 
     def update_plant_labelframes(self):
-    # Remove existing plant labels
         self.frame.destroy()
 
         # Recreate the plant labels based on updated plant data

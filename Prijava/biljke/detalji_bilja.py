@@ -1,38 +1,89 @@
-import tkinter as tk
-from tkinter import ttk
-import matplotlib as mb
+from tkinter import ttk, Label
 from biljke.crud_bilja import CreateNewPlantScreen
+from crud import *
+from database import *
+from biljke.gui_biljke import *
+from PIL import Image, ImageTk
 
-class PlantDetails(tk.Frame):
+
+class PlantDetails(ttk.Frame):
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent)
 
-        label = tk.LabelFrame(self, text="Naziv biljke")
-        label.grid(row=0, column=0, pady=10, padx=10)
+        # configure the grid to have two columns
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)  # add weight to row 2
 
-        sensor_one = tk.Label(label, text="Senzor1")
-        sensor_one.grid(row=0, column=0, pady=10, padx=10)
-        sensor_two = tk.Label(label, text="Senzor2")
-        sensor_two.grid(row=1, column=0, pady=10, padx=10)
-        sensor_three = tk.Label(label, text="Senzor3")
-        sensor_three.grid(row=2, column=0, pady=10, padx=10)
-        sensor_four = tk.Label(label, text="Senzor4")
-        sensor_four.grid(row=3, column=0, pady=10, padx=10)
-        
+        self.plant_image_label = Label(self, image=None)
+        self.plant_image_label.grid(row=0, column=1, padx=10, pady=10, sticky="e")
 
+        self.label = tk.LabelFrame(self, text="Plant Details")
+        self.label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+        self.plant_picture = tk.Label(self.label)
+        self.plant_picture.grid(row=0, column=0, padx=10, pady=10)
+
+        self.plant_name_label = tk.Label(self.label, text="")
+        self.plant_name_label.grid(row=1, column=0, padx=10, pady=10)
+
+        self.plant_description_label = tk.Label(self.label, text="", anchor="w")
+        self.plant_description_label.grid(row=2, column=0, padx=10, pady=10)
+
+        button_previous_plant = tk.Button(self, text="Previous Plant", command=self.previous_plant)
+        button_previous_plant.grid(row=3, column=0, padx=10, pady=10, sticky="w")  # move button to row 3
+
+        button_next_plant = tk.Button(self, text="Next Plant", command=self.next_plant)
+        button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")  # move button to row 3
 
         button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
-        button_submit.grid(row=0,column=1)
+        button_submit.grid(row=4, column=0, padx=10, pady=10, sticky="w")  # move button to row 4
+
+        button_open_creator_window = tk.Button(self, text="Open Creator Window", command=self.open_creator_window)
+        button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e")  # move button to row 4
+
+        # add the plants list and the index of the currently displayed plant
+        self.plants = session.query(Plant).all()
+        self.current_plant_index = 0
+
+        # display the first plant
+        self.display_plant()
+
+
+    def display_plant(self):
+        # display the image of the current plant
+        plant_image_path = plant_image_names[self.current_plant_index]
+        plant_image = Image.open(plant_image_path)
+        plant_image = plant_image.resize((250, 250), Image.ANTIALIAS)
+        plant_image_tk = ImageTk.PhotoImage(plant_image)
+        self.plant_image_label.configure(image=plant_image_tk)
+        self.plant_image_label.image = plant_image_tk
+
+        # display the name and description of the current plant
+        self.plant_name_label.configure(text=self.plants[self.current_plant_index].plant_name)
+        descriptions = [self.plants[self.current_plant_index].plant_description_one,
+                        self.plants[self.current_plant_index].plant_description_two,
+                        self.plants[self.current_plant_index].plant_description_three,
+                        self.plants[self.current_plant_index].plant_description_four]
+        self.plant_description_label.configure(text="\n".join(descriptions))
+
+ 
+    def next_plant(self):
+        # go to the next plant and display it
+        if self.current_plant_index < len(self.plants) - 1:
+            self.current_plant_index += 1
+            self.display_plant()
+
+    def previous_plant(self):
+        # go to the previous plant and display it
+        if self.current_plant_index > 0:
+            self.current_plant_index -= 1
+            self.display_plant()
 
     def submit_plant(self):
-        # Ovde bi se implementirao kod za spremanje nove biljke u bazu podataka
         print("Nova biljka je spremljena.")
 
     def open_creator_window(self):
-        button = tk.Button(self, text="Go to Tab 1",
-                        command=self.open_new_plant_screen)
-        button.grid(row=1,column=1)
-
-    def open_new_plant_screen(self):
         create_new_plant_screen = CreateNewPlantScreen()
-        create_new_plant_screen.grid(row=2,column=1)
+        create_new_plant_screen.grid(row=4, column=0, padx=10, pady=10)
+
+

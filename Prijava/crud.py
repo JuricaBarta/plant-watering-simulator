@@ -21,7 +21,6 @@ class PlantImage:
         return self.photo
 
 
-
 # CREATE
 def create_user(name, surname, username, password):
     user = User(name=name, surname=surname, username=username, password=password)
@@ -228,7 +227,9 @@ def generate_plant():
     plant_name = plant_name()
     plant_description_one = plant_name()
     plant_description_two = plant_name()
-    return create_plant(plant_name, plant_description_one, plant_description_two)
+    plant_description_three = plant_name()
+    plant_description_four = plant_name()
+    return create_plant(plant_name, plant_description_one, plant_description_two, plant_description_three, plant_description_four)
 
 def generate_plant_image(plant_id):
     plant = session.query(Plant).get(plant_id)
