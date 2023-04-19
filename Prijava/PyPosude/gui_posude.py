@@ -119,17 +119,10 @@ class ContainersScreen(ttk.Frame):
         label.config(text=sensor_reading)
 
     def switch_to_tab2(self, container_name):
-        for tab in self.main_screen.notebook.tabs():
-            if self.main_screen.notebook.tab(tab, "text") == "Detalji posude":
-                tab2 = self.main_screen.notebook.nametowidget(tab)
-                tab2.set_container_name(container_name)
-                self.main_screen.notebook.select(tab)
-                return
-        tab2 = ContainerDetails(self.main_screen.notebook, container_name=container_name)
-        self.main_screen.notebook.add(tab2, text="Detalji posude")
-        self.main_screen.notebook.select(tab2)
-
-
-
-
+        container_data = {"name": container_name, "sensors": {}}
+        sensors = get_sensor_by_id(container_name)
+        for sensor in sensors:
+            container_data["sensors"][sensor.sensor_type] = {"reading": sensor.reading, "ideal_reading": sensor.ideal_reading}
+        
+        self.main_screen.show_tab2(container_data)
 

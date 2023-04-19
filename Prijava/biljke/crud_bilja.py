@@ -18,16 +18,25 @@ class CreateNewPlantScreen(tk.Toplevel):
         self.options_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         # add a Listbox to list_plants_frame
-        listbox = tk.Listbox(self.list_plants_frame, height=10)
-        listbox.pack(fill="both", expand=True)
+        self.listbox = tk.Listbox(self.list_plants_frame, height=10)
+        self.listbox.pack(fill="both", expand=True)
 
         # populate the Listbox with plants
-        plants = session.query(Plant).all()
-        for plant in plants:
-            listbox.insert("end", f"{plant.plant_id} - {plant.plant_name}")
+        self.populate_plants_listbox()
 
         # add Buttons to options_frame
         self.add_buttons()
+
+    def populate_plants_listbox(self):
+        # get all plants from the database
+        plants = session.query(Plant).all()
+
+        # clear the Listbox
+        self.listbox.delete(0, "end")
+
+        # repopulate the Listbox with the updated list of plants
+        for plant in plants:
+            self.listbox.insert("end", f"{plant.plant_id} - {plant.plant_name}")
 
     def add_buttons(self):
         for child in self.options_frame.winfo_children():
@@ -69,7 +78,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         name_entry = ttk.Entry(self.options_frame)
         name_entry.pack(pady=5)
 
-        image_label = ttk.Label(self.options_frame, text="Naziv slike (opcionalno):")
+        image_label = ttk.Label(self.options_frame, text="Opis biljke (opcionalno):")
         image_label.pack(pady=10)
 
         image_entry = ttk.Entry(self.options_frame)
@@ -108,28 +117,25 @@ class CreateNewPlantScreen(tk.Toplevel):
         selected_plant = self.listbox.get(self.listbox.curselection()[0])
 
         # get the ID of the selected plant from the Listbox
-        selected_plant_id = selected_plant.split("-")[0].strip()
+        plant_id = selected_plant.split("-")[0].strip()
 
         # delete the selected plant from the database
-        delete_plant(selected_plant_id)
+        delete_plant(session, int(plant_id))
 
         # delete the selected plant from the Listbox
         self.listbox.delete(tk.ACTIVE)
 
         print(f"Biljka {selected_plant} je uspješno izbrisana iz baze podataka.")
 
+
     def update_existing_plant(self):
-    # get the selected plant from the Listbox
-        self.listbox = self.list_plants_frame.winfo_children()[0]
-        selection = self.listbox.get(self.listbox.curselection()[0])
-        if not selection:
-            return
+        # get the selected plant from the Listbox
+        listbox = self.list_plants_frame.winfo_children()[0]
+        selected_plant = listbox.get(listbox.curselection()[0])
 
-        selected_plant_str = self.listbox.get(selection[0])
-        selected_plant_id = selected_plant_str.split("-")[0].strip()
-
-        # retrieve the selected plant from the database
-        selected_plant = session.query(Plant).filter_by(plant_id=selected_plant_id).first()
+        # get the ID and name of the selected plant from the Listbox
+        plant_id, plant_name = selected_plant.split("-")
+        plant_id = plant_id.strip()
 
         # clear the options_frame and create entry and button widgets
         for child in self.options_frame.winfo_children():
@@ -139,30 +145,54 @@ class CreateNewPlantScreen(tk.Toplevel):
         name_label.pack(pady=10)
 
         name_entry = ttk.Entry(self.options_frame)
-        name_entry.insert(0, selected_plant.plant_name)
         name_entry.pack(pady=5)
 
-        image_label = ttk.Label(self.options_frame, text="Naziv slike (opcionalno):")
-        image_label.pack(pady=10)
+        desc1_label = ttk.Label(self.options_frame, text="Opis biljke 1:")
+        desc1_label.pack(pady=10)
 
-        image_entry = ttk.Entry(self.options_frame)
-        image_entry.insert(0, selected_plant.image_name or "")
-        image_entry.pack(pady=5)
+        desc1_entry = ttk.Entry(self.options_frame)
+        desc1_entry.pack(pady=5)
+
+        desc2_label = ttk.Label(self.options_frame, text="Opis biljke 2:")
+        desc2_label.pack(pady=10)
+
+        desc2_entry = ttk.Entry(self.options_frame)
+        desc2_entry.pack(pady=5)
 
         save_button = ttk.Button(
             self.options_frame, 
-            text="Spremi biljku", 
-            command=lambda: self.update_plant(selected_plant_id, name_entry.get(), 
-            image_entry.get() or None)
+            text="Spremi promjene", 
+            command=lambda: self.update_plant(
+                int(plant_id),
+                name_entry.get() or None,
+                desc1_entry.get(),
+                desc2_entry.get() or None
             )
+        )
+
         save_button.pack(pady=10)
 
-    def update_plant(self, plant_id, name, image_name):
+        # pre-fill the Entry widgets with the current plant data
+        plant = session.query(Plant).get(int(plant_id))
+        name_entry.insert(0, plant.plant_name)
+        if plant.plant_description_one is not None and plant.plant_description_one != "":
+            desc1_entry.insert(0, plant.plant_description_one)
+        if plant.plant_description_two is not None and plant.plant_description_two != "":
+            desc2_entry.insert(0, plant.plant_description_two)
+
+
+    def update_plant(self, plant_id, plant_name=None, plant_description_one=None, plant_description_two=None):
         # update the selected plant in the database
-        session.query(Plant).filter_by(plant_id=plant_id).update({
-            "plant_name": name,
-            "image_name": image_name
-        })
+        plant = session.query(Plant).get(plant_id)
+
+        if plant_name is not None:
+            plant.plant_name = plant_name
+
+        if plant_description_one is not None:
+            plant.plant_description_one = plant_description_one
+
+        if plant_description_two is not None:
+            plant.plant_description_two = plant_description_two
+
         session.commit()
 
-        # update the Listbox with the updated plant

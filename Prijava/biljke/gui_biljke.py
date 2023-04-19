@@ -1,9 +1,7 @@
 import tkinter as tk
-from tkinter import ttk
 from database import *
 from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
-from biljke.detalji_bilja import PlantDetails
 
 
 class PlantsScreen(tk.Frame):
@@ -63,7 +61,7 @@ class PlantsScreen(tk.Frame):
             labelframe_plant = tk.LabelFrame(self.frame)
             labelframe_plant.grid(row=row, column=column, padx=10, pady=10)
 
-            plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4(plant_id=i))
+            plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4())
 
             plant_picture_in = PlantImage(self.plant_images[i])
             plant_label['image'] = plant_picture_in.get_image()
@@ -74,8 +72,8 @@ class PlantsScreen(tk.Frame):
 
             self.plant_labelframes.append(labelframe_plant)
 
-    def switch_to_tab4(self, plant_id):
-        self.main_screen.switch_to_tab4(plant_id)
+    def switch_to_tab4(self):
+        self.main_screen.switch_to_tab4()
 
 
     def show_new_plant_screen(self):

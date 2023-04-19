@@ -19,6 +19,17 @@ class PlantImage:
     def get_image(self):
         self.photo.image = self.photo
         return self.photo
+    
+
+def sync_sensors(container_id):
+    container = session.query(Container).get(container_id)
+    if container is None:
+        raise ValueError(f"Container with id {container_id} does not exist in the database.")
+    sensor_type = (['Moisture', 'Light', 'Soil'])
+    moisture = int(50)
+    light = int(5000)
+    soil = int(7)
+    return create_sensor(sensor_type, container_id, moisture, light, soil)
 
 
 # CREATE

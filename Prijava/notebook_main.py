@@ -17,7 +17,7 @@ class MainScreen(tk.Tk):
 
         self.notebook = ttk.Notebook(self)
         tab1 = ContainersScreen(self.notebook, self)
-        tab2 = ContainerDetails(self.notebook, self)
+        tab2 = ContainerDetails(self.notebook)
         tab3 = PlantsScreen(self.notebook, self)
         tab4 = PlantDetails(self.notebook)
 
@@ -32,10 +32,8 @@ class MainScreen(tk.Tk):
         self.notebook.select(1)
         #tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
 
-    def switch_to_tab4(self, plant_id):
+    def switch_to_tab4(self):
         self.notebook.select(3)
-        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])
-        tab4.update_plant_details(plant_id)
 
 
 if __name__ == '__main__':

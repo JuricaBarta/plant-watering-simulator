@@ -26,7 +26,7 @@ class User(Base):
 class Plant(Base):
     __tablename__ = "plants"
 
-    plant_id = Column(Integer, primary_key=True)
+    plant_id = Column(Integer, primary_key=True, autoincrement=True)
     plant_name = Column(String, nullable=False)
     plant_description_one = Column(String)
     plant_description_two = Column(String)
