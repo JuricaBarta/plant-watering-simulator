@@ -60,17 +60,19 @@ class PlantImage(Base):
 class Container(Base):
     __tablename__ = "containers"
 
-    container_id = Column(Integer, primary_key=True)
+    container_id = Column(Integer, primary_key=True, autoincrement=True)
     container_material = Column(String)
     container_location = Column(String, nullable=False)
     plant_id = Column(Integer, ForeignKey('plants.plant_id'))
-    
+
     plant = relationship('Plant', back_populates='containers')
     sensors = relationship('Sensor', back_populates='container')
 
-    def __init__(self, container_material, container_location):
+    def __init__(self, container_material, container_location, plant_id):
         self.container_location = container_location
         self.container_material = container_material
+        self.plant_id = plant_id
+
 
 class Sensor(Base):
     __tablename__ = "sensors"
@@ -188,16 +190,18 @@ else:
     print("Plant images have already been saved in the database.")
 
 
-#Class Container
 # kreiranje 3 posuda samo ako ih nema u bazi
 if session.query(Container).count() == 0:
     container_locations = ['Kitchen', 'Balcony', 'Living room']
-    for i, plant_name in enumerate(plant_names):
+    container_materials = ["Plastic", "Rock", "Ceramic"]
+    plants = session.query(Plant).all()
+    for i, plant in enumerate(plants):
         for j in range(1):
-            container = session.query(Container).filter_by(container_location=f"{container_locations[i % len(container_locations)]}-{j}").first()
+            container_location = f"{container_locations[i % len(container_locations)]}-{j}"
+            container = session.query(Container).filter_by(container_location=container_location).first()
             if container is None and plant is not None:
-                container = Container(container_material='material', container_location=f"{container_locations[i % len(container_locations)]}-{j}")
-                container.plant = plant
+                container_material = f"{container_materials[i % len(container_materials)]}-{j}"
+                container = Container(container_material=container_material, container_location=container_location, plant_id=plant.plant_id)
                 session.add(container)
                 session.commit()
 else:
