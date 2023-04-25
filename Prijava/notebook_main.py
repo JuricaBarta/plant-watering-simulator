@@ -28,9 +28,11 @@ class MainScreen(tk.Tk):
 
         self.notebook.pack(fill="both", expand=True)
 
-    def switch_to_tab2(self):
+    def switch_to_tab2(self, container_name):
         self.notebook.select(1)
-        #tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
+        tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
+        tab2.update_container_data(container_name)
+
 
     def switch_to_tab4(self):
         self.notebook.select(3)

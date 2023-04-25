@@ -95,6 +95,10 @@ def get_plant_images_by_plant_id(plant_id):
 def get_containers_by_plant_id(plant_id):
     return session.query(Container).filter_by(plant_id=plant_id).all()
 
+def get_container_by_name(container_name):
+    return session.query(Container).filter_by(container_location=container_name).first()
+
+
 def get_sensor_by_id(sensor_id):
     return session.query(Sensor).get(sensor_id)
 

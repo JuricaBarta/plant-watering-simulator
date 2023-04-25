@@ -4,6 +4,9 @@ from crud import *
 from PyPosude.crud_posude import CreateNewContainerScreen
 from PyPosude.detalji_posude import ContainerDetails
 import random 
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
 
 class ContainersScreen(ttk.Frame):
     def __init__(self, parent, main_screen):
@@ -31,15 +34,14 @@ class ContainersScreen(ttk.Frame):
         self.add_container_button = tk.Button(self.label, text="Dodaj novu PyPosudu", command=self.show_new_container_screen)
         self.add_container_button.grid(row=1, column=2, padx=5, pady=5)
 
-        sync_button = tk.Button(self.label, text="SYNC", command=lambda: sync_sensors())
-        sync_button.grid(row=0, column=1, padx=5, pady=5)
-
-
         refresh_button = tk.Button(self.label, text="Refresh", command=self.refresh_screen)
         refresh_button.grid(row=0, column=2, padx=5, pady=5)
 
         self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.switch_to_tab2(container_name=""))
         self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
+
+        self.sync_button = tk.Button(self.label, text="SYNC", command=self.sync_sensors)
+        self.sync_button.grid(row=1, column=0, padx=5, pady=5)
 
         self.create_container_labelframes()
 
@@ -53,6 +55,8 @@ class ContainersScreen(ttk.Frame):
         self.plant_names = ['Acer', 'Anthurium', 'Bamboo']
         self.plant_images = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg']
         sensor_types = ["Moisture", "Light", "Soil"]
+
+        self.sensor_labels = []
 
         for i, plant_name in enumerate(self.plant_names):
             column = i % 2
@@ -73,7 +77,7 @@ class ContainersScreen(ttk.Frame):
             for sensor_type in sensor_types:
                 sensor_reading = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
                 sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
-
+                self.sensor_labels.append(sensor_reading)
 
     def add_sensor(self, sensor_type, container_id):
         # Generate random sensor data
@@ -83,8 +87,8 @@ class ContainersScreen(ttk.Frame):
 
         create_sensor(sensor_type=sensor_type, container_id=container_id, moisture=moisture, light=light, soil=soil)
 
-    def generate_sensor_data(self, sensor_type, ideal=False):
-        if not ideal:
+    def generate_sensor_data(self, sensor_type, sync=False):
+        if not sync:
             if sensor_type == "Moisture":
                 return f"Moisture: {random.uniform(0, 100):.2f}%"
             elif sensor_type == "Light":
@@ -98,6 +102,13 @@ class ContainersScreen(ttk.Frame):
                 return "Light: 5000.00 lm"
             elif sensor_type == "Soil":
                 return "Soil: 7.00 ph"
+            
+    def sync_sensors(self):
+        sensor_types = ["Moisture", "Light", "Soil"]
+        for i in range(len(self.sensor_labels)):
+            if i < len(self.sensor_labels):
+                self.sensor_labels[i].configure(text=self.generate_sensor_data(sensor_types[i], sync=True))
+
 
             
     def show_container_details(self, container_id):
@@ -115,17 +126,15 @@ class ContainersScreen(ttk.Frame):
         self.container_labelframes = []
         self.create_container_labelframes()
 
-    def sync_sensors(container_id):
-        container = session.query(Container).get(container_id)
-        if container is None:
-            raise ValueError(f"Container with id {container_id} does not exist in the database.")
-        sensor_type = (['Moisture', 'Light', 'Soil'])
-        moisture = int(50)
-        light = int(5000)
-        soil = int(7)
-        return create_sensor(sensor_type, container_id, moisture, light, soil)
-
-
+    def sync_sensors(self):
+        sensor_types = ["Moisture", "Light", "Soil"]
+        sensor_index = 0
+        for _ in self.plant_names:
+            for i in range(len(sensor_types)):
+                if sensor_index < len(self.sensor_labels):
+                    self.sensor_labels[sensor_index].configure(text=self.generate_sensor_data(sensor_types[i], sync=True))
+                    sensor_index += 1
+        print ("Containers have been synced, plants are now happy :)")
 
     def switch_to_tab2(self, container_name):
         container_data = {"name": container_name, "sensors": {}}
