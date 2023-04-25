@@ -187,9 +187,11 @@ def delete_user(session: Session, user_id: int):
     session.delete(user)
     session.commit()
 
-def delete_plant(session, plant_id):
-    session.query(PlantImage).filter(PlantImage.plant_id == plant_id).delete()
-    session.query(Plant).filter_by(plant_id=plant_id).delete()
+def delete_plant(session: Session, plant_id: int):
+    plant = session.query(Plant).get(plant_id)
+    if plant is None:
+        raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
+    session.delete(plant)
     session.commit()
 
 def delete_plant_image(session: Session, plant_image_id: int):

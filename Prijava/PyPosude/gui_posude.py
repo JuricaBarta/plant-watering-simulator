@@ -4,6 +4,9 @@ from crud import *
 from PyPosude.crud_posude import CreateNewContainerScreen
 from PyPosude.detalji_posude import ContainerDetails
 import random 
+from sqlalchemy.orm import sessionmaker
+
+Session = sessionmaker(bind=engine)
 
 class ContainersScreen(ttk.Frame):
     def __init__(self, parent, main_screen):
@@ -30,10 +33,6 @@ class ContainersScreen(ttk.Frame):
         self.container_labelframes = []
         self.add_container_button = tk.Button(self.label, text="Dodaj novu PyPosudu", command=self.show_new_container_screen)
         self.add_container_button.grid(row=1, column=2, padx=5, pady=5)
-
-        sync_button = tk.Button(self.label, text="SYNC", command=lambda: sync_sensors())
-        sync_button.grid(row=0, column=1, padx=5, pady=5)
-
 
         refresh_button = tk.Button(self.label, text="Refresh", command=self.refresh_screen)
         refresh_button.grid(row=0, column=2, padx=5, pady=5)
@@ -73,6 +72,12 @@ class ContainersScreen(ttk.Frame):
             for sensor_type in sensor_types:
                 sensor_reading = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
                 sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
+
+           
+            sync_button = tk.Button(labelframe_container, text="SYNC", command=lambda plant_id=Plant, container_id=Container: self.sync_sensors(plant_id, container_id))
+
+            sync_button.grid(row=1, column=0, padx=5, pady=5)
+
 
 
     def add_sensor(self, sensor_type, container_id):
@@ -115,17 +120,21 @@ class ContainersScreen(ttk.Frame):
         self.container_labelframes = []
         self.create_container_labelframes()
 
-    def sync_sensors(container_id):
-        container = session.query(Container).get(container_id)
+    def sync_sensors(self, plant_id, container_id):
+        plant = session.query(Plant).filter_by(plant_id=plant_id).first()
+        if plant is None:
+            raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
+        plant = session.query(Plant).filter_by(plant_id=plant_id).one()
+        container = session.query(Container).filter_by(container_id=container_id).one()
+
         if container is None:
-            raise ValueError(f"Container with id {container_id} does not exist in the database.")
+            raise ValueError(f"Container with id {container_id} does not exist for plant {plant_id} in the database.")
         sensor_type = (['Moisture', 'Light', 'Soil'])
         moisture = int(50)
         light = int(5000)
         soil = int(7)
         return create_sensor(sensor_type, container_id, moisture, light, soil)
-
-
+        #create_sensor(sensor_type=sensor_type, container_id=container.id, moisture=moisture, light=light, soil=soil)
 
     def switch_to_tab2(self, container_name):
         container_data = {"name": container_name, "sensors": {}}

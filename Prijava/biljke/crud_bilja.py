@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from database import Plant, session
-from crud import create_plant, update_plant, delete_plant
+from crud import create_plant, delete_plant
 
 
 class PlantListbox(tk.Listbox):
@@ -132,7 +132,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         delete_plant(session, plant_id)
 
         # Delete the selected plant from the Listbox
-        self.list_plants_frame.remove_selected_plant()
+        self.list_plants_frame.remove_plant(self)
 
         print(f"Biljka {selected_plant} je uspješno izbrisana iz baze podataka.")
 
