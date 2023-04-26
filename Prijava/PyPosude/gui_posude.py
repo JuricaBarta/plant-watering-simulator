@@ -34,14 +34,14 @@ class ContainersScreen(ttk.Frame):
         self.add_container_button = tk.Button(self.label, text="Dodaj novu PyPosudu", command=self.show_new_container_screen)
         self.add_container_button.grid(row=1, column=2, padx=5, pady=5)
 
-        refresh_button = tk.Button(self.label, text="Refresh", command=self.refresh_screen)
+        refresh_button = tk.Button(self.label, text="Osvježi", command=self.refresh_screen)
         refresh_button.grid(row=0, column=2, padx=5, pady=5)
 
-        self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.main_screen.switch_to_tab2(self))
-        self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
+        #self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.main_screen.switch_to_tab2(self))
+        #self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
 
         self.sync_button = tk.Button(self.label, text="SYNC", command=self.sync_sensors)
-        self.sync_button.grid(row=1, column=0, padx=5, pady=5)
+        self.sync_button.grid(row=1, column=1, padx=5, pady=5)
 
         self.create_container_labelframes()
 
@@ -116,8 +116,8 @@ class ContainersScreen(ttk.Frame):
         container_details_screen.grid()
 
     def show_new_container_screen(self):
-        create_new_container_screen = CreateNewContainerScreen(self.master)
-        create_new_container_screen.grid()
+        create_new_container_screen = CreateNewContainerScreen()
+        new_container = create_new_container_screen.add_buttons()
 
     def refresh_screen(self):
         for labelframe in self.container_labelframes:

@@ -1,47 +1,184 @@
 import tkinter as tk
 from tkinter import ttk
-from crud import create_container
-from database import session, Plant, Container
+from database import *
+from crud import *
+
 
 class CreateNewContainerScreen(tk.Toplevel):
     def __init__(self):
         super().__init__()
-        self.title("Kreiraj novu PyPosudu")
+        self.title("Kreiraj novu posudu")
         self.geometry("400x300")
 
-        label = tk.Label(self, text="Tab 2: Kreiranje nove posude")
-        label.grid(row=0, column=0, pady=10, padx=10, columnspan=3)
-        self.create_container_form()
+        # create two LabelFrames
+        self.list_containers_frame = ttk.LabelFrame(self, text="Popis posuda")
+        self.list_containers_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
-    def create_container_form(self):
-        self.container_frame = tk.LabelFrame(self, text="Add Container")
-        self.container_frame.grid(row=1, column=0, padx=10, pady=10, columnspan=3)
+        self.options_frame = ttk.LabelFrame(self, text="Opcije")
+        self.options_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        tk.Label(self.container_frame, text="Location").grid(row=0, column=0, padx=10, pady=10)
-        self.container_location = tk.Entry(self.container_frame)
-        self.container_location.grid(row=0, column=1, padx=10, pady=10)
+        # add a Listbox to list_containers_frame
+        self.listbox = tk.Listbox(self.list_containers_frame, height=10)
+        self.listbox.pack(fill="both", expand=True)
 
-        tk.Label(self.container_frame, text="Plant").grid(row=1, column=0, padx=10, pady=10)
-        self.container_plant = ttk.Combobox(self.container_frame, values=self.get_plant_names())
-        self.container_plant.grid(row=1, column=1, padx=10, pady=10)
+        # populate the Listbox with containers
+        self.populate_containers_listbox()
 
-        tk.Button(self.container_frame, text="Add", command=self.add_container).grid(row=2, column=1, padx=10, pady=10)
+        # add Buttons to options_frame
+        self.add_buttons()
 
-    def get_plant_names(self):
-        plants = session.query(Plant).all()
-        return [plant.name for plant in plants]
+    def populate_containers_listbox(self):
+        # get all containers from the database
+        containers = session.query(Container).all()
 
-    def add_container(self):
-        plant_name = self.container_plant.get()
-        plant = session.query(Plant).filter_by(name=plant_name).first()
+        # clear the Listbox
+        self.listbox.delete(0, "end")
 
-        if plant is None:
-            plant = Plant(name=plant_name)
-            session.add(plant)
-            session.commit()
+        # repopulate the Listbox with the updated list of containers
+        for container in containers:
+            self.listbox.insert("end", f"{container.container_id} - {container.container_material}")
 
-        location = self.container_location.get()
-        create_container(location, plant.id)
+    def add_buttons(self):
+        for child in self.options_frame.winfo_children():
+            child.destroy()
 
-        self.destroy()
+        button_add = ttk.Button(
+            self.options_frame,
+            text="Dodaj novu posudu",
+            command=self.add_new_container
+        )
+        button_add.pack(pady=10)
 
+        button_update = ttk.Button(
+            self.options_frame,
+            text="Ažuriraj postojeću posudu",
+            command=self.update_existing_container
+        )
+        button_update.pack(pady=10)
+
+        button_delete = ttk.Button(
+            self.options_frame,
+            text="Izbriši posudu",
+            command=self.remove_container
+        )
+        button_delete.pack(pady=10)
+
+        # add padding to all widgets in options_frame
+        for child in self.options_frame.winfo_children():
+            child.pack_configure(padx=5, pady=5)
+
+    def add_new_container(self):
+        # clear the options_frame and create entry and button widgets
+        for child in self.options_frame.winfo_children():
+            child.destroy()
+
+        name_label = ttk.Label(self.options_frame, text="Ime/materijal posude:")
+        name_label.pack(pady=10)
+
+        name_entry = ttk.Entry(self.options_frame)
+        name_entry.pack(pady=5)
+
+
+        save_button = ttk.Button(
+            self.options_frame,
+            text="Spremi posudu",
+            command=lambda: self.submit_container(name_entry.get()),
+        )
+        save_button.pack(pady=10)
+
+
+    def submit_container(self, name):
+        create_container(name)
+        print(f"Uspješno ste pohranili posudu {name} u bazu podataka")
+        self.update_containers_listbox()
+        self.add_buttons()
+
+    def update_containers_listbox(self):
+        # get all containers from the database
+        containers = session.query(Container).all()
+
+        # clear the Listbox
+        listbox = self.list_containers_frame.winfo_children()[0]
+        listbox.delete(0, "end")
+
+        # repopulate the Listbox with the updated list of containers
+        for container in containers:
+            listbox.insert("end", f"{container.container_id} - {container.container_material}")
+
+    def remove_container(self):
+        # get the selected container from the Listbox
+        self.listbox = self.list_containers_frame.winfo_children()[0]
+        selected_container = self.listbox.get(self.listbox.curselection()[0])
+
+        # get the ID of the selected container from the Listbox
+        container_id = selected_container.split("-")[0].strip()
+
+        # delete the selected container from the database
+        delete_container(session, int(container_id))
+
+        # delete the selected container from the Listbox
+        self.listbox.delete(tk.ACTIVE)
+
+        print(f"Posuda {selected_container} je uspješno izbrisan iz baze podataka.")
+
+    def update_existing_container(self):
+        # get the selected container from the Listbox
+        listbox = self.list_containers_frame.winfo_children()[0]
+        selected_container = listbox.get(listbox.curselection()[0])
+
+        # get the ID and name of the selected container from the Listbox
+        container_id, container_material = selected_container.split("-")
+        container_id = container_id.strip()
+
+        # clear the options_frame and create entry and button widgets
+        for child in self.options_frame.winfo_children():
+            child.destroy()
+
+        name_label = ttk.Label(self.options_frame, text="Ime posude:")
+        name_label.pack(pady=10)
+
+        name_entry = ttk.Entry(self.options_frame)
+        name_entry.pack(pady=5)
+
+        """desc1_label = ttk.Label(self.options_frame, text="Opis posude 1:")
+        desc1_label.pack(pady=10)
+
+        desc1_entry = ttk.Entry(self.options_frame)
+        desc1_entry.pack(pady=5)
+
+        desc2_label = ttk.Label(self.options_frame, text="Opis posude 2:")
+        desc2_label.pack(pady=10)
+
+        desc2_entry = ttk.Entry(self.options_frame)
+        desc2_entry.pack(pady=5)"""
+
+        save_button = ttk.Button(
+            self.options_frame, 
+            text="Spremi promjene", 
+            command=lambda: self.update_container(
+                int(container_id),
+                name_entry.get() or None,
+                """desc1_entry.get(),
+                desc2_entry.get() or None"""
+            )
+        )
+
+        save_button.pack(pady=10)
+
+        # pre-fill the Entry widgets with the current container data
+        container = session.query(Container).get(int(container_id))
+        name_entry.insert(0, container.container_material)
+        """if container.container_description_one is not None and container.container_description_one != "":
+            desc1_entry.insert(0, container.container_description_one)
+        if container.container_description_two is not None and container.container_description_two != "":
+            desc2_entry.insert(0, container.container_description_two)"""
+
+    def update_container(self, container_id, container_material=None):
+        # update the selected container in the database
+        container = session.query(Container).get(container_id)
+        
+        if container_material is not None:
+            container.container_material = container_material
+
+
+        session.commit()

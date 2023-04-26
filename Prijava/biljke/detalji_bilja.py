@@ -35,12 +35,6 @@ class PlantDetails(ttk.Frame):
         button_next_plant = tk.Button(self, text="Next Plant", command=self.next_plant)
         button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")  
 
-        button_open_creator_window = tk.Button(self, text="Open Creator Window", command=self.open_creator_window)
-        button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e") 
-
-        #button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
-        #button_submit.grid(row=4, column=0, padx=10, pady=10, sticky="w") 
-
         button_open_creator_window = tk.Button(self, text="Dodaj novu biljku", command=self.open_creator_window)
         button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e") 
 

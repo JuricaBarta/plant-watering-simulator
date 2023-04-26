@@ -32,7 +32,7 @@ class ContainerDetails(ttk.Frame):
         self.plants = session.query(Plant).all()
         self.current_plant_index = 0
 
-        self.display_plant()
+        """self.display_plant()
 
     def display_plant(self):
         # display the image of the current plant
@@ -44,19 +44,19 @@ class ContainerDetails(ttk.Frame):
         self.plant_image_label.image = plant_image_tk
 
         # display the name and sensors of the current container/plant
-        self.plant_name_label.configure(text=self.plants[self.current_plant_index].plant_name)
+        self.plant_name_label.configure(text=self.plants[self.current_plant_index].plant_name)"""
 
     def next_plant(self):
         # go to the next plant and display it
         if self.current_plant_index < len(self.plants) - 1:
             self.current_plant_index += 1
-            self.display_plant()
+            self.update_container_data()
 
     def previous_plant(self):
         # go to the previous plant and display it
         if self.current_plant_index > 0:
             self.current_plant_index -= 1
-            self.display_plant()
+            self.update_container_data()
 
     """def show_container_details(self, containers):
         for container in containers:
@@ -88,7 +88,6 @@ class ContainerDetails(ttk.Frame):
 
     def update_sensor_labels(self, container_sensors):
         # Update the sensor labels
-        for i, sensor_label in enumerate(container_sensors):
-            sensor_type = ["Moisture", "Light", "Soil"][i]
-            sensor_value = sensor_label.cget("text")
-            self.plant_description_label.configure(text=f"{sensor_type}: {sensor_value}")
+        sensor_values = [sensor_label.cget("text") for sensor_label in container_sensors]
+        sensor_text = "\n".join([f"{sensor_type}: {sensor_value}" for sensor_type, sensor_value in zip(["Moisture", "Light", "Soil"], sensor_values)])
+        self.plant_description_label.configure(text=sensor_text)
