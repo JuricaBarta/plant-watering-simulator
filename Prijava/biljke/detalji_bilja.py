@@ -12,7 +12,7 @@ class PlantDetails(ttk.Frame):
 
         # configure the grid to have two columns
         self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)  # add weight to row 2
+        self.grid_rowconfigure(2, weight=1) 
 
         self.plant_image_label = Label(self, image=None)
         self.plant_image_label.grid(row=0, column=1, padx=10, pady=10, sticky="e")
@@ -30,14 +30,13 @@ class PlantDetails(ttk.Frame):
         self.plant_description_label.grid(row=2, column=0, padx=10, pady=10)
 
         button_previous_plant = tk.Button(self, text="Previous Plant", command=self.previous_plant)
-        button_previous_plant.grid(row=3, column=0, padx=10, pady=10, sticky="w")  # move button to row 3
+        button_previous_plant.grid(row=3, column=0, padx=10, pady=10, sticky="w") 
 
         button_next_plant = tk.Button(self, text="Next Plant", command=self.next_plant)
-        button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")  # move button to row 3
-
+        button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")  
 
         button_open_creator_window = tk.Button(self, text="Open Creator Window", command=self.open_creator_window)
-        button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e")  # move button to row 4
+        button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e") 
 
         #button_submit = tk.Button(self, text="Potvrdi", command=self.submit_plant)
         #button_submit.grid(row=4, column=0, padx=10, pady=10, sticky="w") 
@@ -45,14 +44,12 @@ class PlantDetails(ttk.Frame):
         button_open_creator_window = tk.Button(self, text="Dodaj novu biljku", command=self.open_creator_window)
         button_open_creator_window.grid(row=4, column=1, padx=10, pady=10, sticky="e") 
 
-
         # add the plants list and the index of the currently displayed plant
         self.plants = session.query(Plant).all()
         self.current_plant_index = 0
 
         # display the first plant
         self.display_plant()
-
 
     def display_plant(self):
         # display the image of the current plant
@@ -71,7 +68,6 @@ class PlantDetails(ttk.Frame):
                         self.plants[self.current_plant_index].plant_description_four]
         self.plant_description_label.configure(text="\n".join(descriptions))
 
- 
     def next_plant(self):
         # go to the next plant and display it
         if self.current_plant_index < len(self.plants) - 1:
@@ -88,5 +84,3 @@ class PlantDetails(ttk.Frame):
     def open_creator_window(self):
         create_new_plant_screen = CreateNewPlantScreen()
         create_new_plant_screen.grid(row=4, column=0, padx=10, pady=10)
-
-

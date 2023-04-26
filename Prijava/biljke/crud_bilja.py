@@ -1,17 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 from database import Plant, session
-from crud import create_plant, update_plant, delete_plant
-
-
-class PlantListbox(tk.Listbox):
-    def get_selected_plant(self):
-        selected = self.curselection()
-        if not selected:
-            return None
-        plant_id = int(self.get(selected[0]).split()[0])
-        plant = session.query(Plant).filter_by(plant_id=plant_id).first()
-        return plant
+from crud import create_plant, delete_plant
 
 
 class CreateNewPlantScreen(tk.Toplevel):
@@ -28,7 +18,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         self.options_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         # add a Listbox to list_plants_frame
-        self.listbox = PlantListbox(self.list_plants_frame, height=10)
+        self.listbox = tk.Listbox(self.list_plants_frame, height=10)
         self.listbox.pack(fill="both", expand=True)
 
         # populate the Listbox with plants
@@ -88,7 +78,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         name_entry = ttk.Entry(self.options_frame)
         name_entry.pack(pady=5)
 
-        image_label = ttk.Label(self.options_frame, text="Opis biljke (opcionalno):")
+        image_label = ttk.Label(self.options_frame, text="Naziv slike (opcionalno):")
         image_label.pack(pady=10)
 
         image_entry = ttk.Entry(self.options_frame)
@@ -122,17 +112,18 @@ class CreateNewPlantScreen(tk.Toplevel):
 
 
     def remove_plant(self):
-        # Get the selected plant from the Listbox
-        selected_plant = self.listbox.get_selected_plant()
-        if not selected_plant:
-            return
+    # get the selected plant from the Listbox
+        self.listbox = self.list_plants_frame.winfo_children()[0]
+        selected_plant = self.listbox.get(self.listbox.curselection()[0])
 
-        # Delete the selected plant from the database
-        plant_id = selected_plant.plant_id
-        delete_plant(session, plant_id)
+        # get the ID of the selected plant from the Listbox
+        plant_id = selected_plant.split("-")[0].strip()
 
-        # Delete the selected plant from the Listbox
-        self.list_plants_frame.remove_selected_plant()
+        # delete the selected plant from the database
+        delete_plant(session, int(plant_id))
+
+        # delete the selected plant from the Listbox
+        self.listbox.delete(tk.ACTIVE)
 
         print(f"Biljka {selected_plant} je uspješno izbrisana iz baze podataka.")
 
@@ -205,4 +196,3 @@ class CreateNewPlantScreen(tk.Toplevel):
             plant.plant_description_two = plant_description_two
 
         session.commit()
-

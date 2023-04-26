@@ -37,7 +37,7 @@ class ContainersScreen(ttk.Frame):
         refresh_button = tk.Button(self.label, text="Refresh", command=self.refresh_screen)
         refresh_button.grid(row=0, column=2, padx=5, pady=5)
 
-        self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.switch_to_tab2(container_name=""))
+        self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.main_screen.switch_to_tab2(self))
         self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
 
         self.sync_button = tk.Button(self.label, text="SYNC", command=self.sync_sensors)
@@ -65,7 +65,7 @@ class ContainersScreen(ttk.Frame):
             labelframe_container = tk.LabelFrame(self.frame)
             labelframe_container.grid(row=row, column=column, padx=10, pady=10)
 
-            button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.switch_to_tab2(container_name))
+            button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.main_screen.switch_to_tab2(container_name))
             button_container.grid(row=0, column=0)
 
             plant_picture_in = PlantImage(self.plant_images[i])

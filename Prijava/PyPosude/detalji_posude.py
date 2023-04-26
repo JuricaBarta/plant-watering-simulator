@@ -58,11 +58,37 @@ class ContainerDetails(ttk.Frame):
             self.current_plant_index -= 1
             self.display_plant()
 
-    def show_container_details(self, containers):
+    """def show_container_details(self, containers):
         for container in containers:
             container_name_label = ttk.Label(self, text=f"Container Name: {container['name']}")
             container_name_label.pack()
             plant_name_label = ttk.Label(self, text=f"Plant Name: {container['plant']}")
             plant_name_label.pack()
             for sensor in container['sensors']:
-                sensor_type_label = ttk
+                sensor_type_label = ttk"""
+
+    
+    def update_container_data(self, container_name):
+        # Find the container data in the ContainersScreen
+        container_index = self.master.children['!containersscreen'].plant_names.index(container_name)
+        container_image = self.master.children['!containersscreen'].plant_images[container_index]
+        container_sensors = self.master.children['!containersscreen'].sensor_labels[container_index * 3: (container_index + 1) * 3]
+
+        # Update the container image and sensor labels
+        self.update_container_image(container_image)
+        self.update_sensor_labels(container_sensors)
+
+    def update_container_image(self, container_image):
+        # Update the container image
+        plant_image = Image.open(container_image)
+        plant_image = plant_image.resize((250, 250), Image.ANTIALIAS)
+        plant_image_tk = ImageTk.PhotoImage(plant_image)
+        self.plant_image_label.configure(image=plant_image_tk)
+        self.plant_image_label.image = plant_image_tk
+
+    def update_sensor_labels(self, container_sensors):
+        # Update the sensor labels
+        for i, sensor_label in enumerate(container_sensors):
+            sensor_type = ["Moisture", "Light", "Soil"][i]
+            sensor_value = sensor_label.cget("text")
+            self.plant_description_label.configure(text=f"{sensor_type}: {sensor_value}")

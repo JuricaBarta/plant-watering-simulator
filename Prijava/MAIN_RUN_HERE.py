@@ -74,7 +74,7 @@ class LoginScreen(tk.Tk):
 
 
 try:
-    engine = db.create_engine("sqlite:///users.db")
+    engine = db.create_engine("sqlite:///database.db")
 except Exception as e:
     print(f'Error: {e}')
     

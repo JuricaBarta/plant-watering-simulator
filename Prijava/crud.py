@@ -95,10 +95,6 @@ def get_plant_images_by_plant_id(plant_id):
 def get_containers_by_plant_id(plant_id):
     return session.query(Container).filter_by(plant_id=plant_id).all()
 
-def get_container_by_name(container_name):
-    return session.query(Container).filter_by(container_location=container_name).first()
-
-
 def get_sensor_by_id(sensor_id):
     return session.query(Sensor).get(sensor_id)
 
@@ -191,9 +187,11 @@ def delete_user(session: Session, user_id: int):
     session.delete(user)
     session.commit()
 
-def delete_plant(session, plant_id):
-    session.query(PlantImage).filter(PlantImage.plant_id == plant_id).delete()
-    session.query(Plant).filter_by(plant_id=plant_id).delete()
+def delete_plant(session: Session, plant_id: int):
+    plant = session.query(Plant).get(plant_id)
+    if plant is None:
+        raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
+    session.delete(plant)
     session.commit()
 
 def delete_plant_image(session: Session, plant_image_id: int):
@@ -271,27 +269,22 @@ def generate_sensor(container_id):
 
 
 """# HELPER FUNCTIONS
-
 def generate_name():
     letters = string.ascii_lowercase
     name_length = random.randint(4, 10)
     return ''.join(random.choice(letters) for i in range(name_length)).capitalize()
-
 def generate_username():
     letters = string.ascii_lowercase
     username_length = random.randint(8, 12)
     return ''.join(random.choice(letters) for i in range(username_length))
-
 def generate_password():
     letters = string.ascii_letters + string.digits + string.punctuation
     password_length = random.randint(8, 12)
     return ''.join(random.choice(letters) for i in range(password_length))
-
 def generate_word():
     letters = string.ascii_lowercase
     word_length = random.randint(4, 10)
     return ''.join(random.choice(letters) for i in range(word_length))
-
 def generate_sentence():
     words = [generate_word() for i in range(5)]
     sentence = ' '.join(words)
