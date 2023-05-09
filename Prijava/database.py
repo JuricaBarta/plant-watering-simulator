@@ -116,7 +116,7 @@ def add_user(name, surname, username, password):
     try:
         session.add(new_user)
         session.commit()
-        print("User successfully added.")
+        print(f"Name: '{name}', surname: '{surname}', username: '{username}', password: '{password}' successfully added.")
     except IntegrityError:
         session.rollback()
         print("Error: Username already exists. Please choose a different username.")
