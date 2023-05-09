@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.exc import IntegrityError
 import random
-from datetime import datetime
 import os
 
 
@@ -14,7 +14,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
-    username = Column(String, nullable=False)
+    username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     
     def __init__(self, name, surname, username, password):
@@ -101,7 +101,6 @@ class Sensor(Base):
             self.soil = soil
 
 
-
 # Kreiranje baze podataka i dodavanje korisnika u tablicu
 engine = create_engine("sqlite:///database.db")
 Base.metadata.create_all(engine)
@@ -110,24 +109,20 @@ session = Session()
 
 #Class User
 
-result = session.query(User).count()
-if result == 0:
-    user1 = User(name="Jurica", surname="Barta", username="Jura", password="1234")
-    user2 = User(name="Davor", surname="Skalec", username="Davor", password="1234")
-    user3 = User(name="j", surname="j", username="j", password="j")
-    
-    session.add(user1)
-    session.add(user2)
-    session.add(user3)
-   
-    session.commit()
-    
-    print("Korisnici su uspješno uneseni u tablicu.")
-    print(f"user1: Name: {user1.name} Surname: {user1.surname} Username: {user1.username} Password: {user1.password}")
-    print(f"user2: Name: {user2.name} Surname: {user2.surname} Username: {user2.username} Password: {user2.password}")
-    print(f"user3: Name: {user3.name} Surname: {user3.surname} Username: {user3.username} Password: {user3.password}")
-else:
-    print("Users have already been saved in the database.")
+
+def add_user(name, surname, username, password):
+    new_user = User(name=name, surname=surname, username=username, password=password)
+
+    try:
+        session.add(new_user)
+        session.commit()
+        print("User successfully added.")
+    except IntegrityError:
+        session.rollback()
+        print("Error: Username already exists. Please choose a different username.")
+
+add_user(name="Jurica", surname="Barta", username="Jura", password="1234")
+add_user(name="Davor", surname="Skalec", username="Davor", password="1234")
 
 # Class Plant
 
@@ -230,4 +225,3 @@ if session.query(Sensor).count() == 0:
                 session.commit()
 else:
     print("Sensors have already been saved in the database.")
-

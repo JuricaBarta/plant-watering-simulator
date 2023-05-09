@@ -32,40 +32,31 @@ class ContainerDetails(ttk.Frame):
         self.plants = session.query(Plant).all()
         self.current_plant_index = 0
 
-        """self.display_plant()
-
-    def display_plant(self):
-        # display the image of the current plant
-        plant_image_path = plant_image_names[self.current_plant_index]
-        plant_image = Image.open(plant_image_path)
-        plant_image = plant_image.resize((250, 250), Image.ANTIALIAS)
-        plant_image_tk = ImageTk.PhotoImage(plant_image)
-        self.plant_image_label.configure(image=plant_image_tk)
-        self.plant_image_label.image = plant_image_tk
-
-        # display the name and sensors of the current container/plant
-        self.plant_name_label.configure(text=self.plants[self.current_plant_index].plant_name)"""
-
+       
     def next_plant(self):
         # go to the next plant and display it
         if self.current_plant_index < len(self.plants) - 1:
             self.current_plant_index += 1
-            self.update_container_data()
+            container_name = self.plants[self.current_plant_index].plant_name
+            try:
+                container_index = self.master.children['!containersscreen'].plant_names.index(container_name)
+            except ValueError:
+                print("There are no more containers in the database.")
+                return
+            self.update_container_data(container_name)
 
     def previous_plant(self):
         # go to the previous plant and display it
         if self.current_plant_index > 0:
             self.current_plant_index -= 1
-            self.update_container_data()
+            container_name = self.plants[self.current_plant_index].plant_name
+            try:
+                container_index = self.master.children['!containersscreen'].plant_names.index(container_name)
+            except ValueError:
+                print("There are no more containers in the database.")
+                return
+            self.update_container_data(container_name)
 
-    """def show_container_details(self, containers):
-        for container in containers:
-            container_name_label = ttk.Label(self, text=f"Container Name: {container['name']}")
-            container_name_label.pack()
-            plant_name_label = ttk.Label(self, text=f"Plant Name: {container['plant']}")
-            plant_name_label.pack()
-            for sensor in container['sensors']:
-                sensor_type_label = ttk"""
 
     
     def update_container_data(self, container_name):
