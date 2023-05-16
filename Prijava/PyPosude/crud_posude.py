@@ -78,20 +78,63 @@ class CreateNewContainerScreen(tk.Toplevel):
         name_entry = ttk.Entry(self.options_frame)
         name_entry.pack(pady=5)
 
+        location_label = ttk.Label(self.options_frame, text="Lokacija posude:")
+        location_label.pack(pady=10)
+
+        location_entry = ttk.Entry(self.options_frame)
+        location_entry.pack(pady=5)
 
         save_button = ttk.Button(
             self.options_frame,
             text="Spremi posudu",
-            command=lambda: self.submit_container(name_entry.get()),
+            command=lambda: self.submit_container(name_entry.get(), location_entry.get()),
         )
         save_button.pack(pady=10)
 
-
-    def submit_container(self, name):
-        create_container(name)
+    def submit_container(self, name, container_location):
+        container_id = get_next_container_id()  # You need to implement this function
+        plant_id = container_id
+        create_container(name, container_location, plant_id)
         print(f"Uspješno ste pohranili posudu {name} u bazu podataka")
         self.update_containers_listbox()
         self.add_buttons()
+
+    def add_new_container(self):
+        # clear the options_frame and create entry and button widgets
+        for child in self.options_frame.winfo_children():
+            child.destroy()
+
+        name_label = ttk.Label(self.options_frame, text="Ime/materijal posude:")
+        name_label.pack(pady=10)
+
+        name_entry = ttk.Entry(self.options_frame)
+        name_entry.pack(pady=5)
+
+        location_label = ttk.Label(self.options_frame, text="Lokacija posude:")
+        location_label.pack(pady=10)
+
+        location_entry = ttk.Entry(self.options_frame)
+        location_entry.pack(pady=5)
+
+        save_button = ttk.Button(
+            self.options_frame,
+            text="Spremi posudu",
+            command=lambda: self.submit_container(name_entry.get(), location_entry.get()),
+        )
+        save_button.pack(pady=10)
+
+    def submit_container(self, name, container_location):
+        container_id = get_next_container_id()  # You need to implement this function
+        plant_id = container_id
+        create_container(name, container_location, plant_id)
+        print(f"Uspješno ste pohranili posudu {name} u bazu podataka")
+        self.update_containers_listbox()
+        self.add_buttons()
+
+
+    def generate_unique_plant_id():
+        # Implement a function to generate a unique plant_id
+        pass
 
     def update_containers_listbox(self):
         # get all containers from the database

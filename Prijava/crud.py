@@ -1,6 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from datetime import datetime
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 from database import *
 from PIL import Image, ImageTk
 import random
@@ -30,6 +29,16 @@ def sync_sensors(container_id):
     light = int(5000)
     soil = int(7)
     return create_sensor(sensor_type, container_id, moisture, light, soil)
+
+
+def get_next_container_id():
+    Session = sessionmaker(bind=engine)
+    with Session() as session:
+        container = session.query(Container).order_by(Container.container_id.desc()).first()
+        if container:
+            return container.container_id + 1
+        else:
+            return 1
 
 
 # CREATE
@@ -266,26 +275,3 @@ def generate_sensor(container_id):
     light = random.randint(0, 100)
     soil = random.randint(0, 100)
     return create_sensor(sensor_type, container_id, moisture, light, soil)
-
-
-"""# HELPER FUNCTIONS
-def generate_name():
-    letters = string.ascii_lowercase
-    name_length = random.randint(4, 10)
-    return ''.join(random.choice(letters) for i in range(name_length)).capitalize()
-def generate_username():
-    letters = string.ascii_lowercase
-    username_length = random.randint(8, 12)
-    return ''.join(random.choice(letters) for i in range(username_length))
-def generate_password():
-    letters = string.ascii_letters + string.digits + string.punctuation
-    password_length = random.randint(8, 12)
-    return ''.join(random.choice(letters) for i in range(password_length))
-def generate_word():
-    letters = string.ascii_lowercase
-    word_length = random.randint(4, 10)
-    return ''.join(random.choice(letters) for i in range(word_length))
-def generate_sentence():
-    words = [generate_word() for i in range(5)]
-    sentence = ' '.join(words)
-    return sentence.capitalize() + '.'"""

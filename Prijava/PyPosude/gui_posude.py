@@ -40,8 +40,8 @@ class ContainersScreen(ttk.Frame):
         #self.open_tab2_button = tk.Button(self.label, text="Open Tab 2", command=lambda: self.main_screen.switch_to_tab2(self))
         #self.open_tab2_button.grid(row=1, column=1, padx=5, pady=5)
 
-        self.sync_button = tk.Button(self.label, text="SYNC", command=self.sync_sensors)
-        self.sync_button.grid(row=1, column=1, padx=5, pady=5)
+        #self.sync_button = tk.Button(self.label, text="SYNC", command=self.sync_sensors)
+        #self.sync_button.grid(row=1, column=1, padx=5, pady=5)
 
         self.create_container_labelframes()
 
@@ -79,6 +79,9 @@ class ContainersScreen(ttk.Frame):
                 sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
                 self.sensor_labels.append(sensor_reading)
 
+            sync_button = tk.Button(labelframe_container, text="SYNC", command=lambda index=i: self.sync_sensors(index))
+            sync_button.grid(row=1, column=0, padx=5, pady=5)
+
     def add_sensor(self, sensor_type, container_id):
         # Generate random sensor data
         moisture = random.uniform(0, 100)
@@ -90,27 +93,46 @@ class ContainersScreen(ttk.Frame):
     def generate_sensor_data(self, sensor_type, sync=False):
         if not sync:
             if sensor_type == "Moisture":
-                return f"Moisture: {random.uniform(0, 100):.2f}%"
+                moisture = random.uniform(0, 100)
+                if moisture <= 40:
+                    message = "Zemlja je suha, Trebali biste zaliti biljku"
+                elif moisture <= 60:
+                    message = "Biljka ima dovoljno vode"
+                else:
+                    message = "Biljka ima previše vode, \nprovjerite dno posude te izlijte višak vode"
+                return f"{message}\n\nMoisture: {moisture:.2f}%"
             elif sensor_type == "Light":
-                return f"Light: {random.uniform(0, 10000):.2f} lm"
+                light = random.uniform(0, 10000)
+                if light <= 4000:
+                    message = "Biljka ima pre malo svjetlosti, \nbilo bi ju dobro premjestiti na svjetlije mjesto"
+                elif light <= 6000:
+                    message = "Biljka ima dovoljno svjetla tokom dana, \nnije potrebno ništa mijenjati"
+                else:
+                    message = "Biljka ima previše svjetla, \nbilo bi ju dobro premjestiti u mračniji prostor"
+                return f"{message}\n\nLight: {light:.2f} lm"
             elif sensor_type == "Soil":
-                return f"Soil: {random.uniform(0, 14):.1f}ph" 
+                soil = random.uniform(0, 14)
+                if soil < 5.5:
+                    message = "Zemlja je previše kisela, \ntrebali biste dodati vapna"
+                elif soil <= 7.5:
+                    message = "Ph vrijednost zemlje je dobra"
+                else:
+                    message = "Zemlja je previše alkalna, \ntrebali biste dodati gnojivo"
+                return f"{message}\n\nSoil: {soil:.1f}ph"
         else:
             if sensor_type == "Moisture":
-                return "Moisture: 40.00%"
+                return "Zemlja ima dovoljno vode\n\nMoisture: 40.00%"
             elif sensor_type == "Light":
-                return "Light: 5000.00 lm"
+                return "Biljka ima dovoljno svjetla tokom dana\n\nLight: 5000.00 lm"
             elif sensor_type == "Soil":
-                return "Soil: 7.00 ph"
+                return "Ph vrijednost zemlje je dobra\n\nSoil: 7.00 ph"
             
     def sync_sensors(self):
         sensor_types = ["Moisture", "Light", "Soil"]
         for i in range(len(self.sensor_labels)):
             if i < len(self.sensor_labels):
                 self.sensor_labels[i].configure(text=self.generate_sensor_data(sensor_types[i], sync=True))
-
-
-            
+  
     def show_container_details(self, container_id):
         container_details_screen = ContainerDetails(self.master, container_id)
         container_details_screen.grid()
@@ -126,15 +148,18 @@ class ContainersScreen(ttk.Frame):
         self.container_labelframes = []
         self.create_container_labelframes()
 
-    def sync_sensors(self):
+    def sync_sensors(self, index):
         sensor_types = ["Moisture", "Light", "Soil"]
-        sensor_index = 0
-        for _ in self.plant_names:
-            for i in range(len(sensor_types)):
-                if sensor_index < len(self.sensor_labels):
-                    self.sensor_labels[sensor_index].configure(text=self.generate_sensor_data(sensor_types[i], sync=True))
-                    sensor_index += 1
-        print ("Containers have been synced, plants are now happy :)")
+        sensor_index = index * len(sensor_types)
+        for i in range(len(sensor_types)):
+            if sensor_index < len(self.sensor_labels):
+                old_label = self.sensor_labels[sensor_index]
+                new_label = tk.Label(old_label.master, text=self.generate_sensor_data(sensor_types[i], sync=True))
+                new_label.pack(side=tk.TOP, padx=5, pady=5)
+                old_label.destroy()
+                self.sensor_labels[sensor_index] = new_label
+                sensor_index += 1
+        print ("Container", index, "has been synced, plant", self.plant_names[index], "is now happy :)")
 
     def switch_to_tab2(self, container_name):
         container_data = {"name": container_name, "sensors": {}}
@@ -143,4 +168,3 @@ class ContainersScreen(ttk.Frame):
             container_data["sensors"][sensor.sensor_type] = {"reading": sensor.reading, "ideal_reading": sensor.ideal_reading}
         
         self.main_screen.show_tab2(container_data)
-
