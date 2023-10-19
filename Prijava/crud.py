@@ -68,7 +68,7 @@ def create_container(container_material, container_location, plant_id):
     plant = session.query(Plant).get(plant_id)
     if plant is None:
         raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
-    container = Container(container_material=container_material, container_location=container_location, plant=plant)
+    container = Container(container_material=container_material, container_location=container_location, plant_id=plant_id)
     session.add(container)
     session.commit()
     return container

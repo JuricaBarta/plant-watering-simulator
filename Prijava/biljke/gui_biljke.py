@@ -2,6 +2,8 @@ import tkinter as tk
 from database import *
 from crud import *
 from biljke.crud_bilja import CreateNewPlantScreen
+from PIL import Image, ImageTk
+
 
 
 class PlantsScreen(tk.Frame):
@@ -30,6 +32,7 @@ class PlantsScreen(tk.Frame):
         self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
         self.refresh_button.grid(row=0, column=2, sticky='nw')
 
+
         self.create_plant_labelframes()
 
         self.frame.bind('<Configure>', self.on_frame_configure)
@@ -39,41 +42,49 @@ class PlantsScreen(tk.Frame):
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
     def create_plant_labelframes(self):
-        self.plant_names = [
-            'Acer', 'Anthurium', 'Bamboo',
-            'Calla', 'Davallia Fejeensis',
-            'Dracena Marginata', 'Epipremnum',
-            'Monstera Deliciosa', 'Pillea Elefantore',
-            'Spatifilum'
-        ]
+        # Fetch plant data from the database, including plant images
+        plants = session.query(Plant).all()
 
-        self.plant_images = [
-            'acer.jpg', 'anthurium.jpg', 'bamboo.jpg',
-            'calla.jpg', 'davallia_fejeensis.jpg', 'dracena_marginata.jpg',
-            'epipremnum.jpg', 'pillea_elefantore.jpg',
-            'monstera_deliciosa.jpg', 'spatifilum.jpg'
-        ]
-
-        for i, plant_name in enumerate(self.plant_names):
+        for i, plant in enumerate(plants):
             column = i % 2
             row = i // 2
 
             labelframe_plant = tk.LabelFrame(self.frame)
             labelframe_plant.grid(row=row, column=column, padx=10, pady=10)
 
-            plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4())
+            plant_label = tk.Button(labelframe_plant, command=lambda plant=plant: self.switch_to_tab4(plant))
 
-            plant_picture_in = PlantImage(self.plant_images[i])
-            plant_label['image'] = plant_picture_in.get_image()
+            # Query associated PlantImage objects for the current plant
+            plant_images = plant.plant_images  # Use the relationship directly
+
+            if plant_images:
+                first_plant_image = plant_images[0]
+                image_filename = first_plant_image.image_path
+
+                # Create an instance of your PlantImage class and get the resized image
+                plant_picture = PlantImage(image_filename).open_and_resize()
+
+                if plant_picture:
+                    plant_label.config(image=plant_picture)
+                    plant_label.image = plant_picture  # Keep a reference to prevent garbage collection
+                else:
+                    # Handle the case where no plant images are associated with the plant
+                    # You can set a default image or display a placeholder here
+                    pass
+            else:
+                # Handle the case where no plant images are associated with the plant
+                # You can set a default image or display a placeholder here
+                pass
+
             plant_label.grid(row=0, column=0)
 
-            plant_name_label = tk.Label(labelframe_plant, text=f"{plant_name} Plant")
+            plant_name_label = tk.Label(labelframe_plant, text=plant.plant_name + " Plant")
             plant_name_label.grid(row=1, column=0, pady=10, padx=10)
 
             self.plant_labelframes.append(labelframe_plant)
 
-    def switch_to_tab4(self):
-        self.main_screen.switch_to_tab4()
+    def switch_to_tab4(self, plant_id):
+        self.main_screen.switch_to_tab4(plant_id)
 
 
     def show_new_plant_screen(self):
@@ -89,7 +100,6 @@ class PlantsScreen(tk.Frame):
                     self.update_plant_labelframe(i, *new_plant)
                     break
 
-
     def update_plant_labelframe(self, index, plant_name, plant_image):
         labelframe_plant = self.plant_labelframes[index]
         plant_label = labelframe_plant.grid_slaves(row=0, column=0)[0]
@@ -99,7 +109,6 @@ class PlantsScreen(tk.Frame):
             plant_label.config(image=plant_picture.get_image())
         plant_name_label = labelframe_plant.grid_slaves(row=1, column=0)[0]
         plant_name_label.config(text=f"{plant_name} Plant")
-
 
     def update_plant_labelframes(self):
         self.frame.destroy()
@@ -125,4 +134,43 @@ class PlantsScreen(tk.Frame):
             self.canvas.update_idletasks()
             self.canvas.config(scrollregion=self.canvas.bbox("all"))
 
+    def add_plant_labelframe(self, plant_name, plant_image=None):
+        column = len(self.plant_labelframes) % 2
+        row = len(self.plant_labelframes) // 2
+
+        labelframe_plant = tk.LabelFrame(self.frame)
+        labelframe_plant.grid(row=row, column=column, padx=10, pady=10)
+
+        if plant_image:
+            # For existing plants with images, create a button with the existing behavior
+            plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4())
+        else:
+            # For new plants without images, define a custom behavior here
+            plant_label = tk.Button(labelframe_plant, command=lambda plant_name=plant_name: self.custom_command(plant_name))
+
+        if plant_image:
+            plant_picture_in = PlantImage(plant_image)
+            plant_label['image'] = plant_picture_in.get_image()
+
+        plant_label.grid(row=0, column=0)
+
+        plant_name_label = tk.Label(labelframe_plant, text=f"{plant_name} Plant")
+        plant_name_label.grid(row=1, column=0, pady=10, padx=10)
+
+        self.plant_labelframes.append(labelframe_plant)
+
+    def custom_command(self, plant_name):
+    # Define the custom behavior for the new plants here
+        print(f"Custom command for {plant_name}")
+    # You can add code to switch to a different tab or perform any other action as needed
+
+    def remove_plant_labelframe(self, index):
+        if index < len(self.plant_labelframes):
+            self.plant_labelframes[index].destroy()
+            del self.plant_labelframes[index]
+
+    def create_new_labelframe(self):
+        plant_name = "New Plant"  # You can change this default name
+        plant_image = None  # You can specify the image file if needed
+        self.add_plant_labelframe(plant_name, plant_image)
 

@@ -78,7 +78,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         name_entry = ttk.Entry(self.options_frame)
         name_entry.pack(pady=5)
 
-        image_label = ttk.Label(self.options_frame, text="Naziv slike (opcionalno):")
+        image_label = ttk.Label(self.options_frame, text="Opis biljke (opcionalno):")
         image_label.pack(pady=10)
 
         image_entry = ttk.Entry(self.options_frame)
@@ -95,8 +95,11 @@ class CreateNewPlantScreen(tk.Toplevel):
     def submit_plant(self, name, image):
         create_plant(name, image)
         print(f"Uspješno ste pohranili biljku {name} u bazu podataka")
+        # After creating the plant, add it to the list of plants and update the UI
         self.update_plants_listbox()
-        self.add_buttons()
+        self.create_new_labelframe(name, image)
+        self.add_buttons()  # Optional, you can remove this if it's not needed
+
 
     def update_plants_listbox(self):
         # get all plants from the database
@@ -196,3 +199,20 @@ class CreateNewPlantScreen(tk.Toplevel):
             plant.plant_description_two = plant_description_two
 
         session.commit()
+
+    def submit_plant_and_create_labelframe(self, name_entry, image_entry):
+        # Get the plant name and image from the Entry widgets
+        name = name_entry.get()
+        image = image_entry.get() or None
+
+        # Call the submit_plant function
+        self.submit_plant(name, image)
+
+        # Call the create_new_labelframe function
+        self.create_new_labelframe(name, image)
+
+
+    def create_new_labelframe(self, name, image):
+        plant_name = name  # You can change this if needed
+        plant_image = image  # You can specify the image file if needed
+        create_new_labelframe(self.options_frame, plant_name, plant_image)

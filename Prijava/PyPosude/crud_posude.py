@@ -99,39 +99,6 @@ class CreateNewContainerScreen(tk.Toplevel):
         self.update_containers_listbox()
         self.add_buttons()
 
-    def add_new_container(self):
-        # clear the options_frame and create entry and button widgets
-        for child in self.options_frame.winfo_children():
-            child.destroy()
-
-        name_label = ttk.Label(self.options_frame, text="Ime/materijal posude:")
-        name_label.pack(pady=10)
-
-        name_entry = ttk.Entry(self.options_frame)
-        name_entry.pack(pady=5)
-
-        location_label = ttk.Label(self.options_frame, text="Lokacija posude:")
-        location_label.pack(pady=10)
-
-        location_entry = ttk.Entry(self.options_frame)
-        location_entry.pack(pady=5)
-
-        save_button = ttk.Button(
-            self.options_frame,
-            text="Spremi posudu",
-            command=lambda: self.submit_container(name_entry.get(), location_entry.get()),
-        )
-        save_button.pack(pady=10)
-
-    def submit_container(self, name, container_location):
-        container_id = get_next_container_id()  # You need to implement this function
-        plant_id = container_id
-        create_container(name, container_location, plant_id)
-        print(f"Uspješno ste pohranili posudu {name} u bazu podataka")
-        self.update_containers_listbox()
-        self.add_buttons()
-
-
     def generate_unique_plant_id():
         # Implement a function to generate a unique plant_id
         pass
@@ -141,16 +108,14 @@ class CreateNewContainerScreen(tk.Toplevel):
         containers = session.query(Container).all()
 
         # clear the Listbox
-        listbox = self.list_containers_frame.winfo_children()[0]
-        listbox.delete(0, "end")
+        self.listbox.delete(0, "end")
 
         # repopulate the Listbox with the updated list of containers
         for container in containers:
-            listbox.insert("end", f"{container.container_id} - {container.container_material}")
+            self.listbox.insert("end", f"{container.container_id} - {container.container_material}")
 
     def remove_container(self):
         # get the selected container from the Listbox
-        self.listbox = self.list_containers_frame.winfo_children()[0]
         selected_container = self.listbox.get(self.listbox.curselection()[0])
 
         # get the ID of the selected container from the Listbox
@@ -166,8 +131,7 @@ class CreateNewContainerScreen(tk.Toplevel):
 
     def update_existing_container(self):
         # get the selected container from the Listbox
-        listbox = self.list_containers_frame.winfo_children()[0]
-        selected_container = listbox.get(listbox.curselection()[0])
+        selected_container = self.listbox.get(self.listbox.curselection()[0])
 
         # get the ID and name of the selected container from the Listbox
         container_id, container_material = selected_container.split("-")
@@ -183,26 +147,12 @@ class CreateNewContainerScreen(tk.Toplevel):
         name_entry = ttk.Entry(self.options_frame)
         name_entry.pack(pady=5)
 
-        """desc1_label = ttk.Label(self.options_frame, text="Opis posude 1:")
-        desc1_label.pack(pady=10)
-
-        desc1_entry = ttk.Entry(self.options_frame)
-        desc1_entry.pack(pady=5)
-
-        desc2_label = ttk.Label(self.options_frame, text="Opis posude 2:")
-        desc2_label.pack(pady=10)
-
-        desc2_entry = ttk.Entry(self.options_frame)
-        desc2_entry.pack(pady=5)"""
-
         save_button = ttk.Button(
             self.options_frame, 
             text="Spremi promjene", 
             command=lambda: self.update_container(
                 int(container_id),
-                name_entry.get() or None,
-                """desc1_entry.get(),
-                desc2_entry.get() or None"""
+                name_entry.get() or None
             )
         )
 
@@ -211,10 +161,6 @@ class CreateNewContainerScreen(tk.Toplevel):
         # pre-fill the Entry widgets with the current container data
         container = session.query(Container).get(int(container_id))
         name_entry.insert(0, container.container_material)
-        """if container.container_description_one is not None and container.container_description_one != "":
-            desc1_entry.insert(0, container.container_description_one)
-        if container.container_description_two is not None and container.container_description_two != "":
-            desc2_entry.insert(0, container.container_description_two)"""
 
     def update_container(self, container_id, container_material=None):
         # update the selected container in the database
@@ -222,6 +168,5 @@ class CreateNewContainerScreen(tk.Toplevel):
         
         if container_material is not None:
             container.container_material = container_material
-
 
         session.commit()

@@ -1,10 +1,14 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.filedialog import askopenfilenames
+from PIL import Image, ImageTk
 from crud import *
 from PyPosude.crud_posude import CreateNewContainerScreen
 from PyPosude.detalji_posude import ContainerDetails
 import random 
 from sqlalchemy.orm import sessionmaker
+import matplotlib.pyplot as plt
+import numpy as np
 
 Session = sessionmaker(bind=engine)
 
@@ -16,7 +20,7 @@ class ContainersScreen(ttk.Frame):
         self.label = ttk.LabelFrame(self, text="Containers Screen")
         self.label.grid(padx=10, pady=10)
 
-        self.canvas = tk.Canvas(self.label, highlightthickness=0, height=600, width=640)
+        self.canvas = tk.Canvas(self.label, highlightthickness=0, height=600, width=740)
         self.canvas.grid(sticky='nsew')
 
         scrollbar_y = ttk.Scrollbar(self.label, orient=tk.VERTICAL, command=self.canvas.yview)
@@ -31,6 +35,7 @@ class ContainersScreen(ttk.Frame):
         self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
 
         self.container_labelframes = []
+        self.container_count = 0
         self.add_container_button = tk.Button(self.label, text="Dodaj novu PyPosudu", command=self.show_new_container_screen)
         self.add_container_button.grid(row=1, column=2, padx=5, pady=5)
 
@@ -80,7 +85,20 @@ class ContainersScreen(ttk.Frame):
                 self.sensor_labels.append(sensor_reading)
 
             sync_button = tk.Button(labelframe_container, text="SYNC", command=lambda index=i: self.sync_sensors(index))
-            sync_button.grid(row=1, column=0, padx=5, pady=5)
+            sync_button.grid(row=1, column=1, padx=5, pady=5)
+
+            upload_button = tk.Button(labelframe_container, text="upload photo", command=lambda:upload_file())
+            upload_button.grid(row=1,column=0, padx=5, pady=5)
+            def upload_file():
+                f_types=[("Jpg files", "*.jpg"), ("PNG files", "*,png")]
+                filename=tk.filedialog.askopenfilename(filetypes=f_types)
+                img=Image.open(filename)
+                img=img.resize((100,100))
+                img=ImageTk.PhotoImage(img)
+                e1=tk.Label(upload_button)
+                e1.grid(row=3, column=1)
+                e1.image=img
+                e1["image"]=img
 
     def add_sensor(self, sensor_type, container_id):
         # Generate random sensor data
@@ -138,8 +156,23 @@ class ContainersScreen(ttk.Frame):
         container_details_screen.grid()
 
     def show_new_container_screen(self):
-        create_new_container_screen = CreateNewContainerScreen()
-        new_container = create_new_container_screen.add_buttons()
+        new_container_screen = CreateNewContainerScreen()
+        new_container = new_container_screen.add_buttons()
+
+        if new_container:
+            for i, labelframe in enumerate(self.container_labelframes):
+                container_name_label = labelframe.grid_slaves(row=1, column=0)[0]
+                if not container_name_label.cget('text'):
+                    self.plant_names[i] = new_container[0]
+                    self.plant_images[i] = new_container[1]
+                    self.update_container_labelframe(i, *new_container)
+                    break
+
+    def update_container_labelframe(self, index, container_material, container_location):
+        labelframe_container = self.container_labelframes[index]
+        container_label = labelframe_container.grid_slaves(row=0, column=0)[0]
+        container_name_label = labelframe_container.grid_slaves(row=1, column=0)[0]
+        container_name_label.config(text=f"{plant_name} Plant")
 
     def refresh_screen(self):
         for labelframe in self.container_labelframes:

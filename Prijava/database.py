@@ -33,7 +33,7 @@ class Plant(Base):
     plant_description_three = Column(String)
     plant_description_four = Column(String)
     
-    plant_images = relationship('PlantImage', back_populates='plant')
+    plant_images = relationship('PlantImage', back_populates='plant', cascade="all, delete-orphan")
     containers = relationship('Container', back_populates='plant')
 
     def __init__(self, plant_name, plant_description_one=None, plant_description_two=None, plant_description_three=None, plant_description_four=None):
@@ -163,17 +163,14 @@ plant_image_names = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg', 'calla.jpg',
                      'pillea_elefantore.jpg', 'spatifilum.jpg']
 
 if session.query(PlantImage).count() == 0:
-    # Directory containing the plant images
-    plant_images_dir = os.path.dirname(os.path.abspath(__file__))
-
     # Get a list of unique plant names
     plant_names = [plant.plant_name for plant in session.query(Plant.plant_name).distinct()]
 
     for i, plant_name in enumerate(plant_names):
         plant = session.query(Plant).filter_by(plant_name=plant_name).first()
 
-        # Create the image path based on the plant image name and the directory containing the images
-        image_path = os.path.join(plant_images_dir, plant_image_names[i])
+        # Create the image path based on the plant image name (assuming images are in the project root directory)
+        image_path = plant_image_names[i]
 
         # Create a new PlantImage instance and add it to the session
         plant_image = PlantImage(plant_image_name=plant_image_names[i],
@@ -183,6 +180,8 @@ if session.query(PlantImage).count() == 0:
         session.commit()
 else:
     print("Plant images have already been saved in the database.")
+
+
 
 
 # kreiranje 3 posuda samo ako ih nema u bazi
