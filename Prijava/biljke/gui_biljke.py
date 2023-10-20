@@ -24,14 +24,13 @@ class PlantsScreen(tk.Frame):
         self.frame = tk.Frame(self.canvas)
         self.canvas.create_window((0, 0), window=self.frame, anchor='nw')
 
+
         self.plant_labelframes = []
         self.add_plant_button = tk.Button(self.label, text="Dodaj novu biljku", command=self.show_new_plant_screen)
         self.add_plant_button.grid(row=1, column=2, sticky='ne')
 
-            # Add the Refresh button
         self.refresh_button = tk.Button(self.label, text="Refresh", command=self.update_plant_labelframes)
         self.refresh_button.grid(row=0, column=2, sticky='nw')
-
 
         self.create_plant_labelframes()
 
@@ -41,8 +40,16 @@ class PlantsScreen(tk.Frame):
     def on_frame_configure(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox('all'))
 
+    def switch_to_tab4(self, current_plant):
+        tab4 = self.main_screen.notebook.nametowidget(self.main_screen.notebook.tabs()[3])
+        self.main_screen.notebook.select(3)
+
+        # Fetch associated PlantImage objects for the selected plant
+        plant_images = current_plant.plant_images
+
+        tab4.display_plant(current_plant, plant_images)
+
     def create_plant_labelframes(self):
-        # Fetch plant data from the database, including plant images
         plants = session.query(Plant).all()
 
         for i, plant in enumerate(plants):
@@ -52,10 +59,12 @@ class PlantsScreen(tk.Frame):
             labelframe_plant = tk.LabelFrame(self.frame)
             labelframe_plant.grid(row=row, column=column, padx=10, pady=10)
 
-            plant_label = tk.Button(labelframe_plant, command=lambda plant=plant: self.switch_to_tab4(plant))
+            plant_label = tk.Button(
+                labelframe_plant,
+                command=lambda current_plant=plant: self.switch_to_tab4(current_plant)
+            )
 
-            # Query associated PlantImage objects for the current plant
-            plant_images = plant.plant_images  # Use the relationship directly
+            plant_images = plant.plant_images
 
             if plant_images:
                 first_plant_image = plant_images[0]
@@ -66,15 +75,9 @@ class PlantsScreen(tk.Frame):
 
                 if plant_picture:
                     plant_label.config(image=plant_picture)
-                    plant_label.image = plant_picture  # Keep a reference to prevent garbage collection
+                    plant_label.image = plant_picture 
                 else:
-                    # Handle the case where no plant images are associated with the plant
-                    # You can set a default image or display a placeholder here
                     pass
-            else:
-                # Handle the case where no plant images are associated with the plant
-                # You can set a default image or display a placeholder here
-                pass
 
             plant_label.grid(row=0, column=0)
 
@@ -82,10 +85,6 @@ class PlantsScreen(tk.Frame):
             plant_name_label.grid(row=1, column=0, pady=10, padx=10)
 
             self.plant_labelframes.append(labelframe_plant)
-
-    def switch_to_tab4(self, plant_id):
-        self.main_screen.switch_to_tab4(plant_id)
-
 
     def show_new_plant_screen(self):
         new_plant_screen = CreateNewPlantScreen()
@@ -145,7 +144,7 @@ class PlantsScreen(tk.Frame):
             # For existing plants with images, create a button with the existing behavior
             plant_label = tk.Button(labelframe_plant, command=lambda: self.switch_to_tab4())
         else:
-            # For new plants without images, define a custom behavior here
+            # Make upload photo button!!!
             plant_label = tk.Button(labelframe_plant, command=lambda plant_name=plant_name: self.custom_command(plant_name))
 
         if plant_image:
@@ -160,9 +159,7 @@ class PlantsScreen(tk.Frame):
         self.plant_labelframes.append(labelframe_plant)
 
     def custom_command(self, plant_name):
-    # Define the custom behavior for the new plants here
         print(f"Custom command for {plant_name}")
-    # You can add code to switch to a different tab or perform any other action as needed
 
     def remove_plant_labelframe(self, index):
         if index < len(self.plant_labelframes):
@@ -170,7 +167,8 @@ class PlantsScreen(tk.Frame):
             del self.plant_labelframes[index]
 
     def create_new_labelframe(self):
-        plant_name = "New Plant"  # You can change this default name
-        plant_image = None  # You can specify the image file if needed
+        plant_name = "New Plant"  
+        plant_image = None 
         self.add_plant_labelframe(plant_name, plant_image)
 
+    

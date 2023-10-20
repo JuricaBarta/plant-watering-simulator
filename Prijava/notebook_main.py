@@ -28,20 +28,19 @@ class MainScreen(tk.Tk):
 
         self.notebook.pack(fill="both", expand=True)
 
-        # Add tab1 object to the children dictionary
+        # Add tab1 and tab3 objects to the children dictionary
         self.children['!tab1'] = tab1
+        self.children['!tab3'] = tab3
 
-    def switch_to_tab4(self, plant):
-        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])  # Get the "Detalji Bilja" tab
-        tab4.display_plant(plant)
-        self.notebook.select(3)  # Switch to the "Detalji Bilja" tab
+    def switch_to_tab2(self, container_name):
+        self.notebook.select(1)
+        tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
+        tab2.update_container_data(container_name)
 
-
-    def switch_to_tab4(self, plant):
-        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])  # Get the "Detalji Bilja" tab
-        tab4.display_plant(plant)
+    def switch_to_tab4(self, current_plant, plant_images):
         self.notebook.select(3)
-
+        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])
+        tab4.display_plant(current_plant, plant_images)
 
 if __name__ == '__main__':
     main_screen = MainScreen()

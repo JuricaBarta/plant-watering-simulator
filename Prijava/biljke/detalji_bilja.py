@@ -43,16 +43,11 @@ class PlantDetails(ttk.Frame):
         # display the first plant
         self.display_plant()
 
-    def display_plant(self):
-        if 0 <= self.current_plant_index < len(self.plants_list):
-            current_plant = self.plants_list[self.current_plant_index]
-            
+    def display_plant(self, current_plant=None, plant_images=None):
+        if current_plant:
             # Fetch the image path for the current plant from associated PlantImage
-            plant_images = current_plant.plant_images
-
             if plant_images:
-                # For simplicity, we'll take the first image associated with the plant
-                plant_image_path = plant_images[0].image_path  # Replace with your actual attribute name
+                plant_image_path = plant_images[0].image_path 
 
                 # Display the image of the current plant
                 if plant_image_path:
@@ -75,26 +70,18 @@ class PlantDetails(ttk.Frame):
                     current_plant.plant_description_two,
                     current_plant.plant_description_three,
                     current_plant.plant_description_four
-                ] if desc is not None  # Filter out None values
+                ] if desc is not None  
             ]
 
-            # Check if there are no descriptions
             if not any(descriptions):
                 self.plant_description_label.configure(text="No more info about the plant")
             else:
                 self.plant_description_label.configure(text="\n".join(descriptions))
-        else:
-            # Handle the case where the index is out of range
-            self.plant_image_label.configure(text="No Image")
-            self.plant_name_label.configure(text="Plant Not Found")
-            self.plant_description_label.configure(text="")
-
 
 
     def add_new_plant(self):
-        # Create a new plant, add it to the database, and append it to the list
-        name = "New Plant"  # Modify as needed
-        image = None  # Modify if you want to specify an image
+        name = "New Plant" 
+        image = None  
         create_plant(name, image)
 
         new_plant = session.query(Plant).filter_by(plant_name=name).first()
@@ -107,7 +94,6 @@ class PlantDetails(ttk.Frame):
 
 
     def previous_plant(self):
-        # go to the previous plant and display it
         if self.current_plant_index > 0:
             self.current_plant_index -= 1
             self.display_plant()

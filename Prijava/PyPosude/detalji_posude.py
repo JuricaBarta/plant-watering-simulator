@@ -125,6 +125,7 @@ class ContainerDetails(ttk.Frame):
         # Generate the graph
         self.generate_graph()
 
+
     def generate_graph(self):
         # Create a canvas to display the graphs in the tkinter application
         canvas = FigureCanvasTkAgg(plt.Figure(), master=self)
@@ -142,10 +143,12 @@ class ContainerDetails(ttk.Frame):
         # Plot the data for each sensor type
         for sensor_type in colors:
             # Generate sensor data with sync=False
-            message_false, value_false = tab2.generate_sensor_data(sensor_type, sync=False)
-
-            # Plot the sensor data on the axis with the corresponding color
-            ax.plot([1, 2, 3, 4, 5], [value_false] * 5, label=sensor_type, color=colors[sensor_type])
+            readings = []
+            for i in range(5):
+                message_false, value_false = tab2.generate_sensor_data(sensor_type, sync=False)
+                readings.append(value_false)
+            normalized_readings = normalize_sensor_data(readings)
+            ax.plot([1, 2, 3, 4, 5], normalized_readings, label=sensor_type, color=colors[sensor_type])
 
         # Customize the plot
         ax.set_title("Sensor Data")
@@ -156,17 +159,11 @@ class ContainerDetails(ttk.Frame):
         # Draw the canvas
         canvas.figure = fig
         canvas.draw()
-        
-        # Add the random readings to the plot
-        for sensor_type in colors:
-            # Generate sensor data with sync=False
-            readings = []
-            for i in range(5):
-                message_false, value_false = tab2.generate_sensor_data(sensor_type, sync=False)
-                readings.append(value_false)
 
-            # Plot the sensor data on the axis with the corresponding color
-            ax.plot([1, 2, 3, 4, 5], readings, linestyle='--', color=colors[sensor_type])
-        
-        # Redraw the canvas with the updated plot
-        canvas.draw()
+def normalize_sensor_data(sensor_data):
+        min_value = min(sensor_data)
+        max_value = max(sensor_data)
+        if min_value == max_value:
+            return [50] * len(sensor_data)  # Handle the case where all values are the same
+        normalized_data = [(value - min_value) / (max_value - min_value) * 100 for value in sensor_data]
+        return normalized_data
