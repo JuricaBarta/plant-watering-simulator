@@ -53,7 +53,7 @@ class PlantImage(Base):
     image_path = Column(String(200), nullable=False)
 
     plant = relationship('Plant', back_populates='plant_images')
-
+    
     def __repr__(self):
         return f"<PlantImage {self.plant_image_name}>"
 
@@ -64,15 +64,16 @@ class Container(Base):
     container_material = Column(String)
     container_location = Column(String, nullable=False)
     plant_id = Column(Integer, ForeignKey('plants.plant_id'))
+    planted = Column(String, nullable=True) 
 
-    plant = relationship('Plant', back_populates='containers')
+    plant = relationship('Plant', back_populates='containers', uselist=False)
     sensors = relationship('Sensor', back_populates='container')
 
-    def __init__(self, container_material, container_location, plant_id):
+    def __init__(self, container_material, container_location, plant_id, planted=False): 
         self.container_location = container_location
         self.container_material = container_material
         self.plant_id = plant_id
-
+        self.planted = planted  
 
 class Sensor(Base):
     __tablename__ = "sensors"
@@ -185,9 +186,17 @@ else:
     print("Plant images have already been saved in the database.")
 
 
+<<<<<<< Updated upstream
 # kreiranje 3 posuda samo ako ih nema u bazi
 if session.query(Container).count() == 0:
     container_locations = ['Kitchen', 'Balcony', 'Living room']
+=======
+
+
+# Kreiranje 4. posude bez posađene biljke
+if session.query(Container).count() < 4:
+    container_locations = ['Kitchen', 'Balcony', 'Living room', 'Garden']  # Dodajte novu lokaciju 'Garden'
+>>>>>>> Stashed changes
     container_materials = ["Plastic", "Rock", "Ceramic"]
     plants = session.query(Plant).all()
     for i, plant in enumerate(plants):

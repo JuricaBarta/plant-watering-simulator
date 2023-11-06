@@ -223,5 +223,19 @@ class CreateNewContainerScreen(tk.Toplevel):
         if container_material is not None:
             container.container_material = container_material
 
+<<<<<<< Updated upstream
 
         session.commit()
+=======
+        session.commit()
+
+    def submit_container_and_create_labelframe(self, name_entry):
+        # Get the container name from the Entry widget
+        name = name_entry.get()
+
+        # Call the submit_container function
+        self.submit_container(name)
+
+        # Call the create_new_labelframe function
+        self.create_new_labelframe(name)
+>>>>>>> Stashed changes

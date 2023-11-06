@@ -52,8 +52,8 @@ class ContainersScreen(ttk.Frame):
 
 
     def create_container_labelframes(self):
-        self.plant_names = ['Acer', 'Anthurium', 'Bamboo']
-        self.plant_images = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg']
+        self.plant_names = ['Acer', 'Anthurium', 'Bamboo', 'Empty']
+        self.plant_images = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg', None]  # Dodana vrijednost None za "Empty"
         sensor_types = ["Moisture", "Light", "Soil"]
 
         self.sensor_labels = []
@@ -65,22 +65,55 @@ class ContainersScreen(ttk.Frame):
             labelframe_container = tk.LabelFrame(self.frame)
             labelframe_container.grid(row=row, column=column, padx=10, pady=10)
 
-            button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.main_screen.switch_to_tab2(container_name))
-            button_container.grid(row=0, column=0)
+            if plant_name != "Empty":
+                button_container = tk.Button(labelframe_container, text=plant_name, command=lambda container_name=plant_name: self.main_screen.switch_to_tab2(container_name))
+                button_container.grid(row=0, column=0)
 
-            plant_picture_in = PlantImage(self.plant_images[i])
-            button_container.config(image=plant_picture_in.get_image(), compound=tk.TOP)
+                if self.plant_images[i] is not None:
+                    plant_picture_in = PlantImage(self.plant_images[i])
+                    button_container.config(image=plant_picture_in.get_image(), compound=tk.TOP)
 
-            sensor_frame = tk.Frame(labelframe_container)
-            sensor_frame.grid(row=0, column=1, rowspan=2, sticky='nsew', padx=10)
+                sensor_frame = tk.Frame(labelframe_container)
+                sensor_frame.grid(row=0, column=1, rowspan=2, sticky='nsew', padx=10)
 
-            for sensor_type in sensor_types:
-                sensor_reading = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
-                sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
-                self.sensor_labels.append(sensor_reading)
+                for sensor_type in sensor_types:
+                    sensor_reading = tk.Label(sensor_frame, text=self.generate_sensor_data(sensor_type))
+                    sensor_reading.pack(side=tk.TOP, padx=5, pady=5)
+                    self.sensor_labels.append(sensor_reading)
 
+                sync_button = tk.Button(labelframe_container, text="SYNC", command=lambda index=i: self.sync_sensors(index))
+                sync_button.grid(row=1, column=1, padx=5, pady=5)
+
+                upload_button = tk.Button(labelframe_container, text="Upload photo", command=lambda: upload_file())
+                upload_button.grid(row=1, column=0, padx=5, pady=5)
+            else:
+                empty_label = tk.Label(labelframe_container, text="Empty")
+                empty_label.grid(row=0, column=0)
+
+                
+                no_sensor_data_label = tk.Label(labelframe_container, text="No sensor data")
+                no_sensor_data_label.grid(row=1, column=1)
+
+                upload_button = tk.Button(labelframe_container, text="Upload photo", command=lambda: upload_file())
+                upload_button.grid(row=2, column=0, columnspan=2, padx=5, pady=5)
+
+<<<<<<< Updated upstream
             sync_button = tk.Button(labelframe_container, text="SYNC", command=lambda index=i: self.sync_sensors(index))
             sync_button.grid(row=1, column=0, padx=5, pady=5)
+=======
+
+            def upload_file():
+                f_types = [("Jpg files", "*.jpg"), ("PNG files", "*.png")]
+                filename = tk.filedialog.askopenfilename(filetypes=f_types)
+                if filename:
+                    img = Image.open(filename)
+                    img = img.resize((150, 200))
+                    img = ImageTk.PhotoImage(img)
+                    e1 = tk.Label(upload_button, image=img)
+                    e1.grid(row=3, column=1)
+                    e1.image = img
+
+>>>>>>> Stashed changes
 
     def add_sensor(self, sensor_type, container_id):
         # Generate random sensor data
@@ -168,3 +201,5 @@ class ContainersScreen(ttk.Frame):
             container_data["sensors"][sensor.sensor_type] = {"reading": sensor.reading, "ideal_reading": sensor.ideal_reading}
         
         self.main_screen.show_tab2(container_data)
+
+    

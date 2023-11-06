@@ -126,8 +126,7 @@ class CreateNewPlantScreen(tk.Toplevel):
         self.listbox.delete(tk.ACTIVE)
 
         print(f"Biljka {selected_plant} je uspješno izbrisana iz baze podataka.")
-
-
+        
 
     def update_existing_plant(self):
         # get the selected plant from the Listbox
@@ -196,3 +195,23 @@ class CreateNewPlantScreen(tk.Toplevel):
             plant.plant_description_two = plant_description_two
 
         session.commit()
+<<<<<<< Updated upstream
+=======
+
+    def submit_plant_and_create_labelframe(self, name_entry, image_entry):
+        # Get the plant name and image from the Entry widgets
+        name = name_entry.get()
+        image = image_entry.get() or None
+
+        # Call the submit_plant function
+        self.submit_plant(name, image)
+
+        # Call the create_new_labelframe function
+        self.create_new_labelframe(name, image)
+
+
+    """def create_new_labelframe(self, name, image):
+        plant_name = name  # You can change this if needed
+        plant_image = image  # You can specify the image file if needed
+        create_new_labelframe(self.options_frame, plant_name, plant_image)"""
+>>>>>>> Stashed changes

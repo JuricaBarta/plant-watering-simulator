@@ -9,25 +9,33 @@ class ContainerDetails(ttk.Frame):
         
 
         self.plant_image_label = Label(self, image=None)
+<<<<<<< Updated upstream
         self.plant_image_label.grid(row=0, column=1, padx=10, pady=10, sticky="e")
+=======
+        self.plant_image_label.grid(row=0, column=0, padx=10, pady=10)
+>>>>>>> Stashed changes
 
         self.label = tk.LabelFrame(self, text="Container Details")
         self.label.grid(row=0, column=0, padx=10, pady=10)
 
         self.plant_picture = tk.Label(self.label)
-        self.plant_picture.grid(row=0, column=0, padx=10, pady=10)
+        self.plant_picture.grid(row=0, column=0, padx=5)
 
         self.plant_name_label = tk.Label(self.label, text="")
         self.plant_name_label.grid(row=1, column=0, padx=10, pady=10)
 
         self.plant_description_label = tk.Label(self.label, text="", anchor="w")
-        self.plant_description_label.grid(row=2, column=0, padx=10, pady=10)
+        self.plant_description_label.grid(row=2, column=0, padx=5, pady=5)
 
         button_previous_plant = tk.Button(self, text="Previous Plant", command=self.previous_plant)
-        button_previous_plant.grid(row=3, column=0, padx=10, pady=10, sticky="w")  
+        button_previous_plant.grid(row=3, column=0, padx=5, pady=5)
 
         button_next_plant = tk.Button(self, text="Next Plant", command=self.next_plant)
-        button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        button_next_plant.grid(row=3, column=1, padx=5, pady=5)
+
+        self.graph_type = 1
+        self.graph_button = tk.Button(self, text="Change Graph Type", command=self.change_graph_type)
+        self.graph_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
         self.plants = session.query(Plant).all()
         self.current_plant_index = 0
@@ -77,8 +85,79 @@ class ContainerDetails(ttk.Frame):
         self.plant_image_label.configure(image=plant_image_tk)
         self.plant_image_label.image = plant_image_tk
 
+<<<<<<< Updated upstream
     def update_sensor_labels(self, container_sensors):
         # Update the sensor labels
         sensor_values = [sensor_label.cget("text") for sensor_label in container_sensors]
         sensor_text = "\n".join([f"{sensor_type}: {sensor_value}" for sensor_type, sensor_value in zip(["Moisture", "Light", "Soil"], sensor_values)])
         self.plant_description_label.configure(text=sensor_text)
+=======
+    def change_graph_type(self):
+        # Promjena vrste grafa
+        self.graph_type = (self.graph_type % 3) + 1
+        self.generate_graph()
+
+    def generate_graph(self):
+        # Create a canvas to display the graphs in the tkinter application
+        canvas = FigureCanvasTkAgg(plt.Figure(), master=self)
+        canvas.get_tk_widget().grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        # Get the moisture, light, and soil data from the current tab
+        tab2 = self.master.nametowidget(self.master.select())
+
+        # Create a subplot for all three sensors
+        fig, ax = plt.subplots(figsize=(1, 1))
+
+        # Set colors for each sensor type
+        colors = {"Moisture": "blue", "Light": "yellow", "Soil": "brown"}
+
+        if self.graph_type == 1:
+            # Line chart
+            for sensor_type in colors:
+                readings = []
+                for i in range(5):
+                    message, value = tab2.generate_sensor_data(sensor_type, sync=False)
+                    readings.append(value)
+                normalized_readings = normalize_sensor_data(readings)
+                ax.plot([1, 2, 3, 4, 5], normalized_readings, label=sensor_type, color=colors[sensor_type])
+            ax.set_title("Line Chart")
+            ax.set_xlabel("X Label")
+            ax.set_ylabel("Y Label")
+            ax.legend()
+
+        elif self.graph_type == 2:
+            # Pie chart
+            values = []
+            labels = []
+            for sensor_type in colors:
+                message, value = tab2.generate_sensor_data(sensor_type, sync=False)
+                values.append(value)
+                labels.append(sensor_type)
+            ax.pie(values, labels=labels, autopct='%1.1f%%', startangle=140)
+            ax.set_title("Pie Chart")
+
+        elif self.graph_type == 3:
+            # Histogram
+            for sensor_type in colors:
+                readings = []
+                for i in range(5):
+                    message, value = tab2.generate_sensor_data(sensor_type, sync=False)
+                    readings.append(value)
+                ax.hist(readings, bins=5, label=sensor_type, color=colors[sensor_type], alpha=0.5)
+            ax.set_title("Histogram")
+            ax.set_xlabel("Value")
+            ax.set_ylabel("Frequency")
+            ax.legend()
+
+        # Draw the canvas
+        canvas.figure = fig
+        canvas.draw()
+
+def normalize_sensor_data(sensor_data):
+        min_value = min(sensor_data)
+        max_value = max(sensor_data)
+        if min_value == max_value:
+            return [50] * len(sensor_data)  # Handle the case where all values are the same
+        normalized_data = [(value - min_value) / (max_value - min_value) * 100 for value in sensor_data]
+        return normalized_data
+>>>>>>> Stashed changes
