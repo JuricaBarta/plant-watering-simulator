@@ -28,34 +28,38 @@ class Plant(Base):
 
     plant_id = Column(Integer, primary_key=True, autoincrement=True)
     plant_name = Column(String, nullable=False)
-    plant_description_one = Column(String)
-    plant_description_two = Column(String)
-    plant_description_three = Column(String)
-    plant_description_four = Column(String)
-    
-    plant_images = relationship('PlantImage', back_populates='plant')
+    plant_description = Column(String)  # Combining description one and two
+    moisture_info = Column(String)  # Recommendation for moisture (e.g., 'daily', 'weekly', 'monthly')
+    light_temp_info = Column(String)  # Recommendation for light and temperature (e.g., 'bright, warm', 'low, cool')
+    substrates = Column(String)  # Recommendation for substrates
+
+    image_path = Column(String)
+
+    plant_images = relationship('PlantImage', back_populates='plant', cascade="all, delete-orphan")
     containers = relationship('Container', back_populates='plant')
 
-    def __init__(self, plant_name, plant_description_one=None, plant_description_two=None, plant_description_three=None, plant_description_four=None):
+    def __init__(self, plant_name, plant_description=None, moisture_info=None, light_temp_info=None, substrates=None):
         self.plant_name = plant_name
-        self.plant_description_one = plant_description_one
-        self.plant_description_two = plant_description_two
-        self.plant_description_three = plant_description_three
-        self.plant_description_four = plant_description_four
+        self.plant_description = plant_description
+        self.moisture_info = moisture_info
+        self.light_temp_info = light_temp_info
+        self.substrates = substrates
+
 
 
 class PlantImage(Base):
     __tablename__ = 'plant_image'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     plant_image_name = Column(String(100), nullable=False)
-    plant_id = Column(Integer, ForeignKey('plants.plant_id'), nullable=False)
     image_path = Column(String(200), nullable=False)
+    plant_id = Column(Integer, ForeignKey('plants.plant_id'), nullable=False)
 
     plant = relationship('Plant', back_populates='plant_images')
 
     def __repr__(self):
         return f"<PlantImage {self.plant_image_name}>"
+
 
 class Container(Base):
     __tablename__ = "containers"
@@ -109,7 +113,6 @@ session = Session()
 
 #Class User
 
-
 def add_user(name, surname, username, password):
     new_user = User(name=name, surname=surname, username=username, password=password)
 
@@ -127,34 +130,92 @@ add_user(name="Davor", surname="Skalec", username="Davor", password="1234")
 # Class Plant
 
 if session.query(Plant).count() == 0:
-    plant_names = ["Acer", "Anthurium", "Bamboo", "Calla", "Davallia Fejeensis",
-                "Dracena Marginata", "Epipremnum", "Monstera Deliciosa",
-                "Pillea Elefantore", "Spatifilum"]
-                
-    plant_descriptions = {
-        "Acer": ("Deciduous tree", "Known for its colorful foliage", "Provides a source of maple syrup when tapped during the spring", "Has a wide range of cultivars, including those with unique leaf shapes such as the Japanese maple"),
-        "Anthurium": ("Tropical plant", "Produces heart-shaped flowers", "Has a long blooming period, with flowers lasting up to 8 weeks", "Comes in a variety of colors including pink, red, white, and orange"),
-        "Bamboo": ("Fast-growing grass", "Used for construction and as food for animals", "Contains anti-bacterial and anti-inflammatory properties", "Can absorb up to 12 tons of carbon dioxide per hectare, making it an effective tool against climate change"),
-        "Calla": ("Perennial herb", "Produces trumpet-shaped flowers", "Symbolizes rebirth and resurrection", "Has medicinal uses, such as treatment for swelling and skin irritation"),
-        "Davallia Fejeensis": ("Epiphytic fern", "Native to Fiji", "Also known as the rabbit's foot fern due to its furry rhizomes", "Thrives in low-light environments and is easy to care for"),
-        "Dracena Marginata": ("Evergreen tree", "Long, slender leaves with red edges", "Can grow up to 15 feet tall in optimal conditions", "Air-purifying and removes toxins such as benzene, formaldehyde, and trichloroethylene from the air"),
-        "Epipremnum": ("Epiphytic vine", "Often used as a houseplant", "Can improve indoor air quality by removing pollutants such as formaldehyde, benzene, and xylene", "Has a unique variegated leaf pattern, with shades of green, white, and yellow"),
-        "Monstera Deliciosa": ("Tropical vine", "Produces large, perforated leaves", "Symbolizes the pursuit of knowledge and a thirst for exploration", "Thrives in high humidity environments and is known for its adaptability to various light conditions"),
-        "Pillea Elefantore": ("Herbaceous perennial", 'Also known as "Chinese money plant"', "Symbolizes financial prosperity and good luck", "Thrives in well-draining soil and bright, indirect light"),
-        "Spatifilum": ("Flowering plant", "Produces white or pink flowers", "Symbolizes peace and tranquility", "Air-purifying and removes toxins such as benzene, formaldehyde, and trichloroethylene from the air")
+    plants_data = {
+        "Acer": {
+            "plant_name": "Acer",
+            "plant_description": "Acer is a deciduous tree known for its colorful foliage. \nIt provides a source of maple syrup when tapped during the spring. \nAcer has a wide range of cultivars, \nincluding those with unique leaf shapes, \nsuch as the Japanese maple.",
+            "moisture_info": "Acer requires consistent moisture to thrive.",
+            "light_temp_info": "It prefers bright and warm conditions.",
+            "substrates": "Well-draining soil is recommended for Acer."
+        },
+        "Anthurium": {
+            "plant_name": "Anthurium",
+            "plant_description": "Anthurium is a tropical plant that produces heart-shaped flowers. It has a long blooming period, \nwith flowers lasting up to 8 weeks. \nAnthurium comes in a variety of colors, including pink, red, white, and orange.",
+            "moisture_info": "Keep the soil consistently moist for Anthurium.",
+            "light_temp_info": "Provide bright and warm conditions.",
+            "substrates": "Use a well-draining potting mix for Anthurium."
+        },
+        "Bamboo": {
+            "plant_name": "Bamboo",
+            "plant_description": "Bamboo is a fast-growing grass used for construction and as food for animals. \nIt contains anti-bacterial and anti-inflammatory properties and \ncan absorb up to 12 tons of carbon dioxide per hectare, making it an effective tool against climate change.",
+            "moisture_info": "Bamboo prefers consistently moist soil.",
+            "light_temp_info": "It thrives in bright and warm conditions.",
+            "substrates": "Bamboo does well in well-draining soil."
+        },
+        "Calla": {
+            "plant_name": "Calla",
+            "plant_description": "Calla is a perennial herb that produces trumpet-shaped flowers. \nIt symbolizes rebirth and resurrection and has medicinal uses, \nsuch as treatment for swelling and skin irritation.",
+            "moisture_info": "Keep the soil consistently moist for Calla.",
+            "light_temp_info": "Provide bright and warm conditions.",
+            "substrates": "Well-draining soil is recommended for Calla."
+        },
+        "Davallia Fejeensis": {
+            "plant_name": "Davallia Fejeensis",
+            "plant_description": "Davallia Fejeensis is an epiphytic fern native to Fiji. \nIt is also known as the rabbit's foot fern due to its furry rhizomes. \nIt thrives in low-light environments and is easy to care for.",
+            "moisture_info": "Keep the soil slightly moist for Davallia Fejeensis.",
+            "light_temp_info": "It prefers low-light conditions.",
+            "substrates": "Well-draining soil is suitable for this fern."
+        },
+        "Dracena Marginata": {
+            "plant_name": "Dracena Marginata",
+            "plant_description": "Dracena Marginata is an evergreen tree with long, slender leaves with red edges. \nIt can grow up to 15 feet tall in optimal conditions and is air-purifying, removing toxins such as \nbenzene, formaldehyde, and trichloroethylene from the air.",
+            "moisture_info": "Allow the soil to dry between waterings for Dracena Marginata.",
+            "light_temp_info": "It prefers bright and warm conditions.",
+            "substrates": "Use well-draining soil for this plant."
+        },
+        "Epipremnum": {
+            "plant_name": "Epipremnum",
+            "plant_description": "Epipremnum is an epiphytic vine often used as a houseplant. \nIt can improve indoor air quality by removing pollutants such as formaldehyde, benzene, and xylene. \nIt has a unique variegated leaf pattern with shades of green, white, and yellow.",
+            "moisture_info": "Keep the soil consistently moist for Epipremnum.",
+            "light_temp_info": "It does well in bright and warm conditions.",
+            "substrates": "Use a well-draining potting mix for Epipremnum."
+        },
+        "Monstera Deliciosa": {
+            "plant_name": "Monstera Deliciosa",
+            "plant_description": "Monstera Deliciosa is a tropical vine that produces large, perforated leaves. \nIt symbolizes the pursuit of knowledge and a thirst for exploration. \nIt thrives in high humidity environments and is known for its adaptability to various light conditions.",
+            "moisture_info": "Keep the soil slightly moist for Monstera Deliciosa.",
+            "light_temp_info": "It can tolerate a range of light conditions, from bright to low light.",
+            "substrates": "Well-draining soil is suitable for Monstera Deliciosa."
+        },
+        "Pillea Elefantore": {
+            "plant_name": "Pillea Elefantore",
+            "plant_description": "Pillea Elefantore is a herbaceous perennial also known as the 'Chinese money plant.' \nIt symbolizes financial prosperity and good luck. \nIt thrives in well-draining soil and bright, indirect light.",
+            "moisture_info": "Allow the soil to partially dry between waterings for Pillea Elefantore.",
+            "light_temp_info": "It prefers bright, indirect light and moderate room temperatures.",
+            "substrates": "Use a well-draining potting mix for this plant."
+        },
+        "Spatifilum": {
+            "plant_name": "Spatifilum",
+            "plant_description": "Spatifilum is a flowering plant that produces white or pink flowers. \nIt symbolizes peace and tranquility and is air-purifying, removing toxins such as \nbenzene, formaldehyde, and trichloroethylene from the air.",
+            "moisture_info": "Keep the soil consistently moist for Spatifilum.",
+            "light_temp_info": "It does well in low to moderate light conditions and prefers warmer temperatures.",
+            "substrates": "Use well-draining soil for Spatifilum."
+        }
     }
 
-    for plant_name in plant_names:
-        plant_description = plant_descriptions[plant_name]
+
+
+    for plant_name, data in plants_data.items():
         plant = Plant(plant_name=plant_name,
-                    plant_description_one=plant_description[0],
-                    plant_description_two=plant_description[1],
-                    plant_description_three=plant_description[2],
-                    plant_description_four=plant_description[3])
+                    plant_description=data["plant_description"],
+                    moisture_info=data["moisture_info"],
+                    light_temp_info=data["light_temp_info"],
+                    substrates=data["substrates"])
         session.add(plant)
         session.commit()
 else:
     print("Plants have already been saved in the database.")
+
 
 
 plant_image_names = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg', 'calla.jpg',
@@ -163,17 +224,14 @@ plant_image_names = ['acer.jpg', 'anthurium.jpg', 'bamboo.jpg', 'calla.jpg',
                      'pillea_elefantore.jpg', 'spatifilum.jpg']
 
 if session.query(PlantImage).count() == 0:
-    # Directory containing the plant images
-    plant_images_dir = os.path.dirname(os.path.abspath(__file__))
-
     # Get a list of unique plant names
     plant_names = [plant.plant_name for plant in session.query(Plant.plant_name).distinct()]
 
     for i, plant_name in enumerate(plant_names):
         plant = session.query(Plant).filter_by(plant_name=plant_name).first()
 
-        # Create the image path based on the plant image name and the directory containing the images
-        image_path = os.path.join(plant_images_dir, plant_image_names[i])
+        # Create the image path based on the plant image name (assuming images are in the project root directory)
+        image_path = plant_image_names[i]
 
         # Create a new PlantImage instance and add it to the session
         plant_image = PlantImage(plant_image_name=plant_image_names[i],
@@ -183,6 +241,8 @@ if session.query(PlantImage).count() == 0:
         session.commit()
 else:
     print("Plant images have already been saved in the database.")
+
+
 
 
 # kreiranje 3 posuda samo ako ih nema u bazi
@@ -225,3 +285,10 @@ if session.query(Sensor).count() == 0:
                 session.commit()
 else:
     print("Sensors have already been saved in the database.")
+
+
+def create_plant_image(plant_id, image_path, plant_image_name):
+    plant_image = PlantImage(plant_id=plant_id, image_path=image_path, plant_image_name=plant_image_name)
+    # Add the new plant image to the session and commit
+    session.add(plant_image)
+    session.commit()

@@ -8,8 +8,8 @@ class PlantImage:
     def __init__(self, filename, size=(150, 200)):
         self.filename = filename
         self.size = size
-        self.photo = self.open_and_resize() 
-    
+        self.photo = self.open_and_resize()
+
     def open_and_resize(self):
         picture = Image.open(self.filename)
         resized = picture.resize(self.size, Image.LANCZOS)
@@ -18,7 +18,6 @@ class PlantImage:
     def get_image(self):
         self.photo.image = self.photo
         return self.photo
-    
 
 def sync_sensors(container_id):
     container = session.query(Container).get(container_id)
@@ -30,50 +29,50 @@ def sync_sensors(container_id):
     soil = int(7)
     return create_sensor(sensor_type, container_id, moisture, light, soil)
 
-
 def get_next_container_id():
-    Session = sessionmaker(bind=engine)
-    with Session() as session:
-        container = session.query(Container).order_by(Container.container_id.desc()).first()
-        if container:
-            return container.container_id + 1
-        else:
-            return 1
+    container = session.query(Container).order_by(Container.container_id.desc()).first()
+    if container:
+        return container.container_id + 1
+    else:
+        return 1
 
 
 # CREATE
-def create_user(name, surname, username, password):
+def create_user(session: Session, name, surname, username, password):
     user = User(name=name, surname=surname, username=username, password=password)
     session.add(user)
     session.commit()
     return user
 
-def create_plant(plant_name, plant_description_one=None, plant_description_two=None):
-    plant = Plant(plant_name=plant_name, plant_description_one=plant_description_one,
-                  plant_description_two=plant_description_two)
+def create_plant(name, description, moisture_info, light_temp_info, substrates):
+    # Create an instance of the Plant model and populate its attributes
+    plant = Plant(
+        plant_name=name,
+        plant_description=description,
+        moisture_info=moisture_info,
+        light_temp_info=light_temp_info,
+        substrates=substrates
+    )
+
+    # Add the plant instance to the session and commit the changes
     session.add(plant)
     session.commit()
-    return plant
 
-def create_plant_image(plant_image_name, plant_id):
-    plant = session.query(Plant).get(plant_id)
-    if plant is None:
-        raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
-    plant_image = PlantImage(plant_image_name=plant_image_name, plant=plant)
+def create_plant_image(session: Session, plant_id, image_path, plant_image_name):
+    plant_image = PlantImage(plant_id=plant_id, image_path=image_path, plant_image_name=plant_image_name)
     session.add(plant_image)
     session.commit()
-    return plant_image
 
-def create_container(container_material, container_location, plant_id):
+def create_container(session: Session, container_material, container_location, plant_id):
     plant = session.query(Plant).get(plant_id)
     if plant is None:
         raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
-    container = Container(container_material=container_material, container_location=container_location, plant=plant)
+    container = Container(container_material=container_material, container_location=container_location, plant_id=plant_id)
     session.add(container)
     session.commit()
     return container
 
-def create_sensor(sensor_type, container_id, moisture=None, light=None, soil=None):
+def create_sensor(session: Session, sensor_type, container_id, moisture=None, light=None, soil=None):
     container = session.query(Container).get(container_id)
     if container is None:
         raise ValueError(f"Container with id {container_id} does not exist in the database.")
@@ -83,33 +82,29 @@ def create_sensor(sensor_type, container_id, moisture=None, light=None, soil=Non
     return sensor
 
 # READ
-def get_user_by_id(user_id):
+def get_user_by_id(session: Session, user_id):
     return session.query(User).get(user_id)
 
-def get_user_by_username(username):
+def get_user_by_username(session: Session, username):
     return session.query(User).filter_by(username=username).first()
 
-def get_all_plants():
+def get_all_plants(session: Session):
     return session.query(Plant).all()
 
-def get_plant_by_id(plant_id):
+def get_plant_by_id(session: Session, plant_id):
     return session.query(Plant).get(plant_id)
 
-def get_plant_images_by_plant_id(plant_id):
-    if isinstance(plant_id, list):
-        return session.query(PlantImage).filter(*[PlantImage.plant_id == p for p in plant_id]).all()
-    else:
-        return session.query(PlantImage).filter_by(plant_id=plant_id).all()
+def get_plant_images_by_plant_id(session: Session, plant_id):
+    return session.query(PlantImage).filter_by(plant_id=plant_id).all()
 
-def get_containers_by_plant_id(plant_id):
+def get_containers_by_plant_id(session: Session, plant_id):
     return session.query(Container).filter_by(plant_id=plant_id).all()
 
-def get_sensor_by_id(sensor_id):
+def get_sensor_by_id(session: Session, sensor_id):
     return session.query(Sensor).get(sensor_id)
 
-
 # UPDATE
-def update_user(user_id, name=None, surname=None, username=None, password=None):
+def update_user(session: Session, user_id, name=None, surname=None, username=None, password=None):
     user = session.query(User).get(user_id)
     if user is None:
         raise ValueError(f"User with id {user_id} does not exist in the database.")
@@ -124,20 +119,24 @@ def update_user(user_id, name=None, surname=None, username=None, password=None):
     session.commit()
     return user
 
-def update_plant(plant_id, plant_name=None, plant_description_one=None, plant_description_two=None):
+def update_plant(session: Session, plant_id, plant_name=None, plant_description=None, moisture_info=None, light_temp_info=None, substrates=None):
     plant = session.query(Plant).get(plant_id)
     if plant is None:
         raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
     if plant_name is not None:
         plant.plant_name = plant_name
-    if plant_description_one is not None:
-        plant.plant_description_one = plant_description_one
-    if plant_description_two is not None:
-        plant.plant_description_two = plant_description_two
+    if plant_description is not None:
+        plant.plant_description = plant_description
+    if moisture_info is not None:
+        plant.moisture_info = moisture_info
+    if light_temp_info is not None:
+        plant.light_temp_info = light_temp_info
+    if substrates is not None:
+        plant.substrates = substrates
     session.commit()
     return plant
 
-def update_plant_image(plant_image_id, plant_image_name=None, plant_id=None):
+def update_plant_image(session: Session, plant_image_id, plant_image_name=None, plant_id=None):
     plant_image = session.query(PlantImage).get(plant_image_id)
     if plant_image is None:
         raise ValueError(f"Plant image with id {plant_image_id} does not exist in the database.")
@@ -151,7 +150,7 @@ def update_plant_image(plant_image_id, plant_image_name=None, plant_id=None):
     session.commit()
     return plant_image
 
-def update_container(container_id, container_material=None, container_location=None, plant_id=None):
+def update_container(session: Session, container_id, container_material=None, container_location=None, plant_id=None):
     container = session.query(Container).get(container_id)
     if container is None:
         raise ValueError(f"Container with id {container_id} does not exist in the database.")
@@ -167,7 +166,7 @@ def update_container(container_id, container_material=None, container_location=N
     session.commit()
     return container
 
-def update_sensor(sensor_id, sensor_type=None, container_id=None, moisture=None, light=None, soil=None):
+def update_sensor(session: Session, sensor_id, sensor_type=None, container_id=None, moisture=None, light=None, soil=None):
     sensor = session.query(Sensor).get(sensor_id)
     if sensor is None:
         raise ValueError(f"Sensor with id {sensor_id} does not exist in the database.")
@@ -188,36 +187,35 @@ def update_sensor(sensor_id, sensor_type=None, container_id=None, moisture=None,
     return sensor
 
 # DELETE
-
-def delete_user(session: Session, user_id: int):
+def delete_user(session: Session, user_id):
     user = session.query(User).get(user_id)
     if user is None:
         raise ValueError(f"User with id {user_id} does not exist in the database.")
     session.delete(user)
     session.commit()
 
-def delete_plant(session: Session, plant_id: int):
+def delete_plant(session: Session, plant_id):
     plant = session.query(Plant).get(plant_id)
     if plant is None:
         raise ValueError(f"Plant with id {plant_id} does not exist in the database.")
     session.delete(plant)
     session.commit()
 
-def delete_plant_image(session: Session, plant_image_id: int):
+def delete_plant_image(session: Session, plant_image_id):
     plant_image = session.query(PlantImage).get(plant_image_id)
     if plant_image is None:
         raise ValueError(f"Plant image with id {plant_image_id} does not exist in the database.")
     session.delete(plant_image)
     session.commit()
 
-def delete_container(session: Session, container_id: int):
+def delete_container(session: Session, container_id):
     container = session.query(Container).get(container_id)
     if container is None:
         raise ValueError(f"Container with id {container_id} does not exist in the database.")
     session.delete(container)
     session.commit()
 
-def delete_sensor(session: Session, sensor_id: int):
+def delete_sensor(session: Session, sensor_id):
     sensor = session.query(Sensor).get(sensor_id)
     if sensor is None:
         raise ValueError(f"Sensor with id {sensor_id} does not exist in the database.")

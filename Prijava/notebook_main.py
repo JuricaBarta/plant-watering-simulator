@@ -13,7 +13,7 @@ class MainScreen(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Algebra")
-        self.geometry("900x700")
+        self.geometry("1000x900")
 
         self.notebook = ttk.Notebook(self)
         tab1 = ContainersScreen(self.notebook, self)
@@ -28,15 +28,19 @@ class MainScreen(tk.Tk):
 
         self.notebook.pack(fill="both", expand=True)
 
+        # Add tab1 and tab3 objects to the children dictionary
+        self.children['!tab1'] = tab1
+        self.children['!tab3'] = tab3
+
     def switch_to_tab2(self, container_name):
         self.notebook.select(1)
         tab2 = self.notebook.nametowidget(self.notebook.tabs()[1])
         tab2.update_container_data(container_name)
 
-
-    def switch_to_tab4(self):
+    def switch_to_tab4(self, current_plant, plant_images):
         self.notebook.select(3)
-
+        tab4 = self.notebook.nametowidget(self.notebook.tabs()[3])
+        tab4.display_plant(current_plant, plant_images)
 
 if __name__ == '__main__':
     main_screen = MainScreen()
