@@ -75,24 +75,21 @@ class PlantDetails(ttk.Frame):
                 plant_description = "\n".join(descriptions)
                 self.plant_description_label.configure(text=plant_description)
 
-            # Fetch the image path for the current plant from associated PlantImage
+            plant_images = current_plant.plant_images
+
             if plant_images:
-                plant_image_path = plant_images[0].image_path
-                # Do something with the image path, e.g., display the image
+                # Display the first image associated with the current plant
+                image_path = plant_images[0].image_path
 
-
-
-
-                # Display the image of the current plant
-                if plant_image_path:
-                    plant_image = Image.open(plant_image_path)
+                if image_path:
+                    plant_image = Image.open(image_path)
                     plant_image = plant_image.resize((250, 250), Image.ANTIALIAS)
                     plant_image_tk = ImageTk.PhotoImage(plant_image)
                     self.plant_image_label.configure(image=plant_image_tk)
                     self.plant_image_label.image = plant_image_tk
-                else:
-                    self.plant_image_label.configure(image=None)  # Clear the image
-                    self.plant_image_label.configure(text="No image")
+            else:
+                self.plant_image_label.configure(image=None)  # Clear the image
+                self.plant_image_label.configure(text="No image")
 
     def next_plant(self):
         if self.current_plant_index < len(self.plants_list) - 1:

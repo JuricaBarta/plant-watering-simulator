@@ -160,6 +160,13 @@ class PlantsScreen(tk.Frame):
             
             # Save the uploaded image to the database
             create_plant_image(current_plant.plant_id, filename, "")
+            plant_image_name = filename  # You can specify a name or generate one
+            create_plant_image(current_plant.plant_id, plant_image_name, filename)
+
+    def create_plant_image(plant_id, image_name, image_path):
+        plant_image = PlantImage(image_path=image_path, plant_id=plant_id)
+        session.add(plant_image)
+        session.commit()
 
     def custom_command(self, plant_name):
         print(f"Custom command for {plant_name}")

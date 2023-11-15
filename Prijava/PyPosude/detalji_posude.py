@@ -8,27 +8,31 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 class ContainerDetails(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-        
+
         self.plant_image_label = Label(self, image=None)
-        self.plant_image_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        self.plant_image_label.grid(row=0, column=0, padx=10, pady=10)
 
         self.label = tk.LabelFrame(self, text="Container Details")
         self.label.grid(row=1, column=0, padx=10, pady=10)
 
         self.plant_picture = tk.Label(self.label)
-        self.plant_picture.grid(row=0, column=0, padx=10, pady=10)
+        self.plant_picture.grid(row=0, column=0, padx=5)
 
         self.plant_name_label = tk.Label(self.label, text="")
         self.plant_name_label.grid(row=1, column=0, padx=10, pady=10)
 
         self.plant_description_label = tk.Label(self.label, text="", anchor="w")
-        self.plant_description_label.grid(row=2, column=0, padx=10, pady=10)
+        self.plant_description_label.grid(row=2, column=0, padx=5, pady=5)
 
         button_previous_plant = tk.Button(self, text="Previous Plant", command=self.previous_plant)
-        button_previous_plant.grid(row=3, column=0, padx=10, pady=10, sticky="w")  
+        button_previous_plant.grid(row=3, column=0, padx=5, pady=5)
 
         button_next_plant = tk.Button(self, text="Next Plant", command=self.next_plant)
-        button_next_plant.grid(row=3, column=1, padx=10, pady=10, sticky="e")
+        button_next_plant.grid(row=3, column=1, padx=5, pady=5)
+
+        self.graph_type = 1
+        self.graph_button = tk.Button(self, text="Change Graph Type", command=self.change_graph_type)
+        self.graph_button.grid(row=4, column=0, columnspan=2, padx=5, pady=5)
 
         self.plants = session.query(Plant).all()
         self.current_plant_index = 0
@@ -122,35 +126,25 @@ class ContainerDetails(ttk.Frame):
         self.update_container_image(container_image)
         self.update_sensor_labels(container_sensors)
 
-         # Gumb za promjenu vrste grafa
-        self.graph_type = 1
-        self.graph_button = tk.Button(self, text="Change Graph Type", command=self.change_graph_type)
-        self.graph_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10, sticky="w")
+        # Generate the graph
+        self.generate_graph()
 
-        self.plants = session.query(Plant).all()
-        self.current_plant_index = 0
 
     def change_graph_type(self):
-        # Promjena vrste grafa
         self.graph_type = (self.graph_type % 3) + 1
         self.generate_graph()
 
     def generate_graph(self):
-        # Create a canvas to display the graphs in the tkinter application
         canvas = FigureCanvasTkAgg(plt.Figure(), master=self)
         canvas.get_tk_widget().grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         # Get the moisture, light, and soil data from the current tab
         tab2 = self.master.nametowidget(self.master.select())
 
-        # Create a subplot for all three sensors
-        fig, ax = plt.subplots(figsize=(12, 6))
-
-        # Set colors for each sensor type
+        fig, ax = plt.subplots(figsize=(8, 6))
         colors = {"Moisture": "blue", "Light": "yellow", "Soil": "brown"}
 
         if self.graph_type == 1:
-            # Line chart
             for sensor_type in colors:
                 readings = []
                 for i in range(5):
@@ -164,7 +158,6 @@ class ContainerDetails(ttk.Frame):
             ax.legend()
 
         elif self.graph_type == 2:
-            # Pie chart
             values = []
             labels = []
             for sensor_type in colors:
@@ -175,7 +168,6 @@ class ContainerDetails(ttk.Frame):
             ax.set_title("Pie Chart")
 
         elif self.graph_type == 3:
-            # Histogram
             for sensor_type in colors:
                 readings = []
                 for i in range(5):
@@ -187,7 +179,6 @@ class ContainerDetails(ttk.Frame):
             ax.set_ylabel("Frequency")
             ax.legend()
 
-        # Draw the canvas
         canvas.figure = fig
         canvas.draw()
 

@@ -267,3 +267,5 @@ class CreateNewPlantScreen(tk.Toplevel):
         plant_name = name  # You can change this if needed
         plant_image = image  # You can specify the image file if needed
         #create_new_labelframe(self.options_frame, plant_name, plant_image)
+
+    
